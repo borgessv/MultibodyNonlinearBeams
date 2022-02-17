@@ -4,7 +4,7 @@ addpath('multibody');
 %% carrega parametros da asa
 wing = highlyflex; % Patil --> Hodges
 
-
+s=45;
 %% inicializa e grava o modelo
 nrb = 15; %numero de corpos rigidos
 %matrizes_multibody = multibody(wing,nrb,"coupled"); % a versao coupled

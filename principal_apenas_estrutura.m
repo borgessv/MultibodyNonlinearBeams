@@ -21,6 +21,6 @@ h = [0;h(1:nrb);0;h(nrb+1:2*nrb);0;h(2*nrb+1:3*nrb)];
 
 figure;plot3(h(1:nrb+1), h((nrb+2):(2*nrb+2)), h((2*nrb+3):end)); axis equal;
 
-    !git add .
-    !git commit -m "add existing file"
-    !git push origin main
+!git add .
+!git commit -m "add existing file"
+!git push origin main

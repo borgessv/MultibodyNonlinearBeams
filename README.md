@@ -1,1 +1,1 @@
-# NonlinearBeamModels
+# MultibodyNonlinearBeams

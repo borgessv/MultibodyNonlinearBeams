@@ -1,4 +1,4 @@
-function plot_structure_test(Q,beam_data,Xsection,varargin)
+function plot_structure_test(Q,beam_data,varargin)
 %
 % plot_structure(q,Xsection,L,r0_ea_v,c,a,varargin) plots the deformed 
 % beam in a multibody analysis considering axial, in-plane bending, 
@@ -37,53 +37,117 @@ load(beam_data,'beam')
 % end
 plot_options = varargin(cellfun(@(x_plt) ischar(x_plt),varargin));
 
-switch isnumeric(varargin{1})
-    case 0
-        if endsWith(Xsection,'.txt') == 1
-            Xsection_data = readtable(Xsection);
-            Xsection_data = Xsection_data{:,:};
-        elseif any(strcmp(Xsection,'Circular'))
-            angle_circular = 0:pi/18:2*pi;
-            x_circular = cos(angle_circular)/2 + 0.5;
-            y_circular = sin(angle_circular)/2;
-            Xsection_data = [x_circular.' y_circular.'];
-        else
-            error(['Cross-section .txt data file is missing. For ''Rectangular''' ...
-                ' cross-section the tickness of the first element must be specified in varargin{1}.'])
-        end
-    case 1
-        d = varargin{1};
-        if any(strcmp(Xsection,'Rectangular'))
-            Xsection_data = [0 -d/2; 0 d/2; 1 d/2; 1 -d/2; 0 -d/2];
-        else
-            error(['varargin{1} is numeric. You must delete it in order to use ' ...
-                'a .txt data file or specify ''Rectangular'' for the cross-section input variable'])
-        end
-end
+% switch isnumeric(varargin{1})
+%     case 0
+%         if endsWith(Xsection,'.txt') == 1
+%             Xsection_data = readtable(Xsection);
+%             Xsection_data = Xsection_data{:,:};
+%         elseif any(strcmp(Xsection,'Circular'))
+%             angle_circular = 0:pi/18:2*pi;
+%             x_circular = cos(angle_circular)/2 + 0.5;
+%             y_circular = sin(angle_circular)/2;
+%             Xsection_data = [x_circular.' y_circular.'];
+%         else
+%             error(['Cross-section .txt data file is missing. For ''Rectangular''' ...
+%                 ' cross-section the tickness of the first element must be specified in varargin{1}.'])
+%         end
+%     case 1
+%         d = varargin{1};
+%         if any(strcmp(Xsection,'Rectangular'))
+%             Xsection_data = [0 -d/2; 0 d/2; 1 d/2; 1 -d/2; 0 -d/2];
+%         else
+%             error(['varargin{1} is numeric. You must delete it in order to use ' ...
+%                 'a .txt data file or specify ''Rectangular'' for the cross-section input variable'])
+%         end
+% end
 
 for i_beam = 1:length(beam)
+    Xsection = beam(i_beam).Xsection;
+    if i_beam == 8 || i_beam == 9 || i_beam == 10
+        a = -1;
+    else
+        a = 1;
+    end
+    switch isnumeric(varargin{1})
+        case 0
+            if endsWith(Xsection,'.txt') == 1
+                Xsection_data = readtable(Xsection);
+                Xsection_data = Xsection_data{:,:};
+            elseif any(strcmp(Xsection,'Circular'))
+                angle_circular = 0:pi/18:2*pi;
+                x_circular = cos(angle_circular)/2 + 0.5;
+                y_circular = sin(angle_circular)/2;
+                Xsection_data = [x_circular.' y_circular.'];
+            else
+                error(['Cross-section .txt data file is missing. For ''Rectangular''' ...
+                    ' cross-section the tickness of the first element must be specified in varargin{1}.'])
+            end
+        case 1
+            d = varargin{1};
+            if any(strcmp(Xsection,'Rectangular'))
+                Xsection_data = [0 -d/2; 0 d/2; 1 d/2; 1 -d/2; 0 -d/2];
+            else
+                error(['varargin{1} is numeric. You must delete it in order to use ' ...
+                    'a .txt data file or specify ''Rectangular'' for the cross-section input variable'])
+            end
+    end
 
+
+    if i_beam == 1
+        r0_0_def = beam(i_beam).element(1).r0;
+    else
+      r0_0_def = beam(beam(i_beam).connectivity).C_i0.'*beam(beam(i_beam).connectivity).element(beam(i_beam).connection_element).C_di.'*(beam(beam(i_beam).connectivity).element(beam(i_beam).connection_element).r0_d + beam(i_beam).connection_element_point*(beam(beam(i_beam).connectivity).element(beam(i_beam).connection_element).r1_d - beam(beam(i_beam).connectivity).element(beam(i_beam).connection_element).r0_d));
+    end
     for i_element = 1:beam(i_beam).n_element
-        r0_i = beam(i_beam).C_i0*beam(i_beam).element(i_element).r0;
-        r1_i = beam(i_beam).C_i0*beam(i_beam).element(i_element).r1;
+        r0_i_undef = beam(i_beam).C_i0*beam(i_beam).element(i_element).r0;
+        r1_i_undef = beam(i_beam).C_i0*beam(i_beam).element(i_element).r1;
 
+        if isa(Q,'double')
+        else
+            q = Q(i_beam).q;
+            beam(i_beam).element(i_element).C_di = DCM(1,q(i_element+beam(i_beam).n_element))*DCM(2,q(i_element+2*beam(i_beam).n_element))*DCM(3,q(i_element+3*beam(i_beam).n_element));
+            beam(i_beam).element(i_element).r0_d = beam(i_beam).element(i_element).C_di*beam(i_beam).C_i0*r0_0_def;
+            beam(i_beam).element(i_element).r1_d = beam(i_beam).element(i_element).r0_d + [beam(i_beam).L_element + q(i_element);0;0];
+
+            r0_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r1_d;
+
+            Xsection_coord_def = [zeros(1,length(Xsection_data));a*(beam(i_beam).element(i_element).c.*Xsection_data(:,1)-beam(i_beam).element(i_element).c*beam(i_beam).yCM).';(beam(i_beam).element(i_element).c*Xsection_data(:,2)).'];
+            r0_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*(beam(i_beam).element(i_element).r0_d + Xsection_coord_def);
+            r1_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*(beam(i_beam).element(i_element).r1_d + Xsection_coord_def);
+            X3D_def = [r0_Xsection_0_def(1,:).' r1_Xsection_0_def(1,:).'];
+            Y3D_def = [r0_Xsection_0_def(2,:).' r1_Xsection_0_def(2,:).'];
+            Z3D_def = [r0_Xsection_0_def(3,:).' r1_Xsection_0_def(3,:).'];
+            surf(X3D_def, Y3D_def, Z3D_def,'facecolor',[1 0.5 0],'linestyle','none');
+            hold on
+            if any(strcmp(plot_options,'DisplayElements')) || any(strcmp(plot_options,'displayelements')) || any(strcmp(plot_options,'DISPLAYELEMENTS'))
+                plot3(X3D_def,Y3D_def,Z3D_def,'color',[0.5 0.5 0.5])
+            else
+                if i_element == 1
+                    plot3(X3D_def(:,1),Y3D_def(:,1),Z3D_def(:,1),'color',[0.5 0.5 0.5])
+                elseif i_element == beam(i_beam).n_element
+                    plot3(X3D_def(:,2),Y3D_def(:,2),Z3D_def(:,2),'color',[0.5 0.5 0.5])
+                end
+            end
+        end
+
+        % Plotting undeformed shape:
         if any(strcmp(plot_options,'DisplayUndeformed')) || any(strcmp(plot_options,'displayundeformed')) || any(strcmp(plot_options,'DISPLAYUNDEFORMED'))
-        Xsection_coord_undeformed = [zeros(1,length(Xsection_data));(beam(i_beam).element(i_element).c.*Xsection_data(:,1)-beam(i_beam).element(i_element).c*beam(i_beam).yCM).';(beam(i_beam).element(i_element).c*Xsection_data(:,2)).'];
-        r0_Xsection_0 = beam(i_beam).C_i0.'*(r0_i + Xsection_coord_undeformed);
-        r1_Xsection_0 = beam(i_beam).C_i0.'*(r1_i + Xsection_coord_undeformed);
+        Xsection_coord_undef = [zeros(1,length(Xsection_data));a*(beam(i_beam).element(i_element).c.*Xsection_data(:,1)-beam(i_beam).element(i_element).c*beam(i_beam).yCM).';(beam(i_beam).element(i_element).c*Xsection_data(:,2)).'];
+        r0_Xsection_0 = beam(i_beam).C_i0.'*(r0_i_undef + Xsection_coord_undef);
+        r1_Xsection_0 = beam(i_beam).C_i0.'*(r1_i_undef + Xsection_coord_undef);
         
-        X3D_undeformed = [r0_Xsection_0(1,:).' r1_Xsection_0(1,:).'];
-        Y3D_undeformed = [r0_Xsection_0(2,:).' r1_Xsection_0(2,:).'];
-        Z3D_undeformed = [r0_Xsection_0(3,:).' r1_Xsection_0(3,:).'];
-        surf(X3D_undeformed, Y3D_undeformed, Z3D_undeformed,'facecolor','b','linestyle','none');
+        X3D_undef = [r0_Xsection_0(1,:).' r1_Xsection_0(1,:).'];
+        Y3D_undef = [r0_Xsection_0(2,:).' r1_Xsection_0(2,:).'];
+        Z3D_undef = [r0_Xsection_0(3,:).' r1_Xsection_0(3,:).'];
+        surf(X3D_undef, Y3D_undef, Z3D_undef,'facecolor',[0.9 0.9 0.9],'linestyle','none');
         hold on
         if any(strcmp(plot_options,'DisplayElements')) || any(strcmp(plot_options,'displayelements')) || any(strcmp(plot_options,'DISPLAYELEMENTS'))
-            plot3(X3D_undeformed,Y3D_undeformed,Z3D_undeformed,'k')
+            plot3(X3D_undef,Y3D_undef,Z3D_undef,'color',[0.5 0.5 0.5])
         else
             if i_element == 1
-                plot3(X3D_undeformed(:,1),Y3D_undeformed(:,1),Z3D_undeformed(:,1),'k')
+                plot3(X3D_undef(:,1),Y3D_undef(:,1),Z3D_undef(:,1),'color',[0.5 0.5 0.5])
             elseif i_element == beam(i_beam).n_element
-                plot3(X3D_undeformed(:,2),Y3D_undeformed(:,2),Z3D_undeformed(:,2),'k')
+                plot3(X3D_undef(:,2),Y3D_undef(:,2),Z3D_undef(:,2),'color',[0.5 0.5 0.5])
             end
         end
         else

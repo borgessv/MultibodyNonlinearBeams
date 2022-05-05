@@ -1,12 +1,14 @@
 addpath("multibody_num");
 wing = highlyflex;
-n = 50;
+n = 25;
 xeq = fsolve(@(X) solve_equilibrium(X,wing), zeros(2*n,1));
 %multibody_num(wing, n)
 
 %%
 h = elemental_position_num(xeq,16/n);
-figure;plot3(h(1:n), h((n+1):(2*n)), h((2*n+1):end))
+figure;plot3(h(1:n), h((n+1):(2*n)), -h((2*n+1):end))
+axis equal
+grid on
 %%
 matrizes = multibody_num(xeq, wing, n);
 

@@ -82,9 +82,18 @@ for i_beam = 1:length(beam)
             beam(i_beam).element(i_element).r1_d = beam(i_beam).element(i_element).r0_d + [beam(i_beam).L_element + q(i_element);0;0];
             r0_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r1_d;
 
-            Xsection_coord_def = (DCM(1,a*deg2rad(beam(i_beam).AoI_deg))*DCM(2,a*deg2rad(beam(i_beam).Gamma_deg))*DCM(3,pi/2)).'*(DCM(1,a*q(i_element+beam(i_beam).n_element))*DCM(2,a*q(i_element+2*beam(i_beam).n_element))*DCM(3,q(i_element+3*beam(i_beam).n_element))).'*[(beam(i_beam).element(i_element).c.*Xsection_data(:,3)-beam(i_beam).element(i_element).c*beam(i_beam).xCM).';(beam(i_beam).element(i_element).c.*Xsection_data(:,1)-beam(i_beam).element(i_element).c*beam(i_beam).yCM).';((beam(i_beam).element(i_element).c*Xsection_data(:,2))-beam(i_beam).element(i_element).c*beam(i_beam).zCM).'];
-            r0_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r0_d + Xsection_coord_def;
-            r1_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r1_d + Xsection_coord_def;
+            if ~isnan(beam(i_beam).connectivity)
+                Xsection_coord_def = (DCM(1,a*deg2rad(beam(i_beam).AoI_deg))*DCM(2,a*deg2rad(beam(i_beam).Gamma_deg))*DCM(3,pi/2)).'*(DCM(1,a*q(i_element+beam(i_beam).n_element))*DCM(2,a*q(i_element+2*beam(i_beam).n_element))*DCM(3,q(i_element+3*beam(i_beam).n_element))).'*(beam(beam(i_beam).connectivity).element(beam(i_beam).connection_element).C_di.')*[(beam(i_beam).element(i_element).c.*Xsection_data(:,3)-beam(i_beam).element(i_element).c*beam(i_beam).xCM).';(beam(i_beam).element(i_element).c.*Xsection_data(:,1)-beam(i_beam).element(i_element).c*beam(i_beam).yCM).';((beam(i_beam).element(i_element).c*Xsection_data(:,2))-beam(i_beam).element(i_element).c*beam(i_beam).zCM).'];
+
+                r0_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r0_d + Xsection_coord_def;
+                r1_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r1_d + Xsection_coord_def;
+            else
+                Xsection_coord_def = (DCM(1,a*deg2rad(beam(i_beam).AoI_deg))*DCM(2,a*deg2rad(beam(i_beam).Gamma_deg))*DCM(3,pi/2)).'*(DCM(1,a*q(i_element+beam(i_beam).n_element))*DCM(2,a*q(i_element+2*beam(i_beam).n_element))*DCM(3,q(i_element+3*beam(i_beam).n_element))).'*[(beam(i_beam).element(i_element).c.*Xsection_data(:,3)-beam(i_beam).element(i_element).c*beam(i_beam).xCM).';(beam(i_beam).element(i_element).c.*Xsection_data(:,1)-beam(i_beam).element(i_element).c*beam(i_beam).yCM).';((beam(i_beam).element(i_element).c*Xsection_data(:,2))-beam(i_beam).element(i_element).c*beam(i_beam).zCM).'];
+
+                r0_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r0_d + Xsection_coord_def;
+                r1_Xsection_0_def = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r1_d + Xsection_coord_def;
+
+            end
 %             r0d = beam(i_beam).C_i0.'*beam(i_beam).element(i_element).C_di.'*beam(i_beam).element(i_element).r0_d;
 %             plot3(r0d(1),r0d(2),r0d(3),'or')
             X3D_def = [r0_Xsection_0_def(1,:).' r1_Xsection_0_def(1,:).'];

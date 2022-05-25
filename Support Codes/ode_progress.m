@@ -1,9 +1,20 @@
 function status = ode_progress(t,X,flag,varargin)
 
 persistent t_start tfinal t0_iter tinitial aux dt
-% regular call -> increment wbar
-if any(strcmp(varargin,'Plot'))
-    status_plot = odeplot(t,X,flag);
+
+if any(strcmp(varargin,'PlotProgress'))
+    if any(strcmp(flag,'init'))
+        figure
+        status_plot = odeplot(t,X,flag);
+        title('Simulation Progress','interpreter','latex')
+        xlabel('t [s]','interpreter','latex')
+        ylabel('State Variables','interpreter','latex')
+        set(gcf,'color','w')
+        grid on
+    else
+        status_plot = odeplot(t,X,flag);
+    end
+
     if status_plot == 1
         status = 1;
         prompt = '\n\nThe simulation has been interrupted! Do you wish to run the animation code anyway (y/n)? ';
@@ -54,10 +65,6 @@ else
             %t_iter = tic;
             t_start = tic;
             aux = 1;
-            title('Simulation Progress','interpreter','latex')
-            xlabel('t [s]','interpreter','latex')
-            ylabel('$\mathbf{X}$','interpreter','latex')
-            set(gcf,'color','w')
 
         case 'done'
             status = 0;

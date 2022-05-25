@@ -1,11 +1,11 @@
-function [ geom, iner, cpmo ] = polygeom( x, y ) 
+function [geom,iner,cpmo] = polygeom(x,y) 
 %POLYGEOM Geometry of a planar polygon
 %
-%   POLYGEOM( X, Y ) returns area, X centroid,
+%   POLYGEOM(X,Y) returns area, X centroid,
 %   Y centroid and perimeter for the planar polygon
 %   specified by vertices in vectors X and Y.
 %
-%   [ GEOM, INER, CPMO ] = POLYGEOM( X, Y ) returns
+%   [GEOM,INER,CPMO] = POLYGEOM(X,Y) returns
 %   area, centroid, perimeter and area moments of 
 %   inertia for the polygon.
 %   GEOM = [ area   X_cen  Y_cen  perimeter ]

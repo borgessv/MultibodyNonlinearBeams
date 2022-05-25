@@ -1,4 +1,4 @@
-function Qe = generalized_force(t,Jq,DoF,varargin)
+function Qe = generalized_force(t,X,Jq,DoF,varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION OVERVIEW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   The function generalized_force(t,Jq,varargin) returns the generalized 
 %   forces acting upon the system. 
@@ -55,11 +55,12 @@ for i_beam = 1:n_beam
     if any(i_beam == 1)
         for i_element = 1:n
             %%%%%%%% Repeat this block to consider different forces acting on different elements %%%%%%%
-            if any(i_element == n)
-                if t >= 2 && t <= 4
-                    F_vec(:,i_element) = 500*[0; -10*sin(pi/2*t); 2*sin(pi/2*t)]; % External force acting on each element of the beam
+            if any(i_element == 1:n)
+                if t > 0 && t <= 15
+                    F_vec(:,i_element) = 0.06*t^2*[cos(pi/2-sum(X(1:i_element))); 0; sin(pi/2-sum(X(1:i_element)))]; % External force acting on each element of the beam
+                    %F_vec(:,i_element) = 0.25*t^2*[cos(pi/2-sum(X(1:i_element)))*cos(pi/2+sum(X(n+1:n+i_element))); cos(pi/2-sum(X(1:i_element)))*sin(pi/2+sum(X(n+1:n+i_element))); sin(pi/2-sum(X(1:i_element)))]; % External force acting on each element of the beam
                 elseif t>0 && t < 2
-                    F_vec(:,i_element) = [0; -5000*sin(pi/2*t); 0];
+                    F_vec(:,i_element) = [0; 0*sin(pi/2*t); 0];
                 else
                     F_vec(:,i_element) = [-0; -0; -0];
                 end

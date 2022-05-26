@@ -181,10 +181,10 @@ for i = 1:n_frame
     else
         progressbar(i/length(T)*100,t_rem);
     end
-    delete(findall(f,'type','annotation')) % clears annotation
+    delete(findall(f,'type','annotation')) % clears annotation to update in the next iteration
 end
 if any(strcmp(varargin,'gif'))
-    web(gif_filename)
+    winopen(gif_filename);
 end
 if any(strcmp(varargin,'avi'))
     close(v)

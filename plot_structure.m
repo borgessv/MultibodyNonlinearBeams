@@ -8,7 +8,7 @@ if ~isempty(varargin) && isnumeric(varargin{end})
 end
 
 figure
-set(gcf, 'Position',  [250, 42, 750, 645])
+%set(gcf, 'Position',  [250, 42, 750, 645])
 set(gcf,'color','w');
 
 element_position(X,DoF);
@@ -70,9 +70,9 @@ for i_beam = 1:length(beam)
         title('Equilibrium Solution','interpreter','latex')
         grid on
         axis equal
-        xlim([(min(r(:,1))-max(vertcat(beam.element.c))) (max(r(:,1))+max(vertcat(beam.element.c)))])
-        ylim([(min(r(:,2))-max(vertcat(beam.element.c))) (max(r(:,2))+max(vertcat(beam.element.c)))])
-        zlim([(min(r(:,3))-max(vertcat(beam.element.c))) (max(r(:,3))+max(vertcat(beam.element.c)))])
+        %xlim([(min(r(:,1))-max(vertcat(beam.element.c))) (max(r(:,1))+max(vertcat(beam.element.c)))])
+        %ylim([(min(r(:,2))-max(vertcat(beam.element.c))) (max(r(:,2))+max(vertcat(beam.element.c)))])
+        %zlim([(min(r(:,3))-max(vertcat(beam.element.c))) (max(r(:,3))+max(vertcat(beam.element.c)))])
 
         if ~isempty(varargin) && isnumeric(varargin{end})
             element_position(X_r,DoF);

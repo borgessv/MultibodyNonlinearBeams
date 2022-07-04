@@ -1,6 +1,7 @@
 function beam = create_beam(beam_data)
 
 addpath CrossSectionData
+addpath 'Support Codes'
 
 % Reading input file and creating arrays for the properties of the beams:
 [beam_properties,Xsection] = xlsread(beam_data);
@@ -15,17 +16,20 @@ c1_beam = beam_properties(9,:);
 xCM_beam = beam_properties(10,:);
 yCM_beam = beam_properties(11,:);
 zCM_beam = beam_properties(12,:);
-Lambda_beam_deg = beam_properties(13,:);
-Gamma_beam_deg = beam_properties(14,:);
-AoI_beam_deg = beam_properties(15,:);
-connectivity_beam = beam_properties(16,:);
-connection_point_beam = beam_properties(17,:);
-E_beam = beam_properties(18,:);
-G_beam = beam_properties(20,:);
+ay_beam = beam_properties(13,:);
+az_beam = beam_properties(14,:);
+Lambda_beam_deg = beam_properties(15,:);
+Gamma_beam_deg = beam_properties(16,:);
+AoI_beam_deg = beam_properties(17,:);
+connectivity_beam = beam_properties(18,:);
+connection_point_beam = beam_properties(19,:);
+E_beam = beam_properties(20,:);
+G_beam = beam_properties(22,:);
 
 n_beam = length(ID_beam);
 beam(1:n_beam) = struct('Xsection','','n_element',0,'L',0,'L_element',0,...
     'C_i0',zeros(3),'yCM',0,'zCM',0,...
+    'ay',0,'az',0,...
     'Lambda_deg',0,'Gamma_deg',0,'AoI_deg',0,'m',0,'c',0,...
     'connectivity',0,'connection_point',0,...
     'connection_element',0,'connection_element_point',0,'E',0,'G',0,...
@@ -50,6 +54,8 @@ for i_beam = 1:n_beam
     beam(i_beam).xCM = xCM_beam(i_beam);
     beam(i_beam).yCM = yCM_beam(i_beam);
     beam(i_beam).zCM = zCM_beam(i_beam);
+    beam(i_beam).ay = ay_beam(i_beam);
+    beam(i_beam).az = az_beam(i_beam);
     beam(i_beam).C_i0 = DCM(1,deg2rad(beam(i_beam).AoI_deg))*DCM(2,deg2rad(beam(i_beam).Gamma_deg))*DCM(3,deg2rad(beam(i_beam).Lambda_deg));
     beam(i_beam).m = m0_beam(i_beam) + m1_beam(i_beam)*x;
     beam(i_beam).c = c0_beam(i_beam) + c1_beam(i_beam)*x;

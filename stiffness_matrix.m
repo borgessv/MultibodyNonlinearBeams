@@ -95,6 +95,30 @@ for i_beam = 1:n_beam
         Ka = diag(Ka);
         beam(i_beam).K = blkdiag(beam(i_beam).K,Ka);
     end
+
+    % Static solution of Saint Venant's beam equation - torsion:
+    if any(strcmp(DoF,'Torsion'))
+        syms phi(x)
+        p_GJ = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.GJ),2);
+        GJ(x) = poly2sym(p_GJ,x);
+        BC = phi(0) == 0;
+        phi(x) = dsolve(diff(phi,x,1) == 1/GJ,BC);
+        Tphi(x) = GJ*phi/x;
+        phitest = double(phi(xtest));
+        Tphitest = double(Tphi(xtest(2:end)));
+        beam(i_beam).phi = phitest;
+
+        phi = zeros(1,length(xtest)-1);
+        Kphi = zeros(1,length(xtest)-1);
+        phi(1) = 0;
+        Kphi(1) = 0;
+        for i = 2:length(xtest)
+            phi(i) = phitest(i) - phitest(i-1);
+            Kphi(i) = abs(Tphitest(i-1)/phi(i));
+        end
+        Kphi = diag(Kphi(2:end));
+        beam(i_beam).K = blkdiag(beam(i_beam).K,Kphi);
+    end
 end
 K = blkdiag(beam.K);
 end

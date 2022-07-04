@@ -10,8 +10,9 @@ end
 
 n_frame = length(T);
 f = figure('visible','off');
-set(gcf, 'Position',  [250, 42, 750, 645])
-set(gcf,'color','w');
+%f.WindowState = 'maximized';
+f.Position = [150, 42, 950, 645];
+f.Color = 'w';
 
 if any(strcmp(varargin,'gif'))
     gif_filename = [filename '.gif'];
@@ -30,24 +31,28 @@ if any(strcmp(varargin,'avi'))
     end
     v.FrameRate = id - 1;
     open(v);
-    ax = gca();
+    ax = subplot(2,2,[1,3]);
+    ax3 = subplot(2,2,2);
+    ax2 = subplot(2,2,4);
 end
 if isempty(varargin)
     error('File extension not supported or not specified! Valid options are: "gif", "avi" or both.')
 end
 
+r_tip = zeros(n_frame,3);
+r_tip_ROM = zeros(n_frame,3);
 for i = 1:n_frame
     t1 = tic;
     element_position(X(i,:),DoF);
     for i_beam = 1:length(beam)
         r = [beam(i_beam).r0(1,:);beam(i_beam).r1];
         rCM = beam(i_beam).rCM;
+        r_tip(i,:) = r(end,:);
         if any(strcmp(type,'1D'))
             if i == 1
                 fig(1) = plot3(ax,r(:,1),r(:,2),r(:,3),'-|k','markersize',2,'markerfacecolor','k');
                 hold on
                 fig(2) = plot3(ax,rCM(:,1),rCM(:,2),rCM(:,3),'sr','markersize',2,'markerfacecolor','r');
-                set(ax,'XLimMode','manual','YLimMode','manual','ZLimMode','manual');
                 xlabel('x [m]','interpreter','latex')
                 ylabel('y [m]','interpreter','latex')
                 zlabel('z [m]','interpreter','latex')
@@ -82,6 +87,7 @@ for i = 1:n_frame
                 annotation('textbox',[0.2, 0.85, 0.1, 0.1],'String',str,'edgecolor','w','FitBoxToText','on','FontSize',10,'interpreter','latex');
             end
 
+
         elseif any(strcmp(type,'3D'))
             Xsection = beam(i_beam).Xsection;
             if endsWith(Xsection,'.txt') == 1
@@ -106,26 +112,82 @@ for i = 1:n_frame
                 Z3D_def(:,2*i_element-1:2*i_element) = [r0_Xsection_0_def(3,:).' r1_Xsection_0_def(3,:).'];
             end
             if i == 1
+                % Instant Position:
                 fig1 = surf(ax,X3D_def,Y3D_def,Z3D_def,'facecolor',[1 0.5 0],'linestyle','none');
-                hold on
+                hold(ax,'on')
                 fig2 = plot3(ax,X3D_def(:),Y3D_def(:),Z3D_def(:),'color',[0.5 0.5 0.5]);
-                set(ax,'XLimMode','manual','YLimMode','manual','ZLimMode','manual');
-                xlabel('x [m]','interpreter','latex')
-                ylabel('y [m]','interpreter','latex')
-                zlabel('z [m]','interpreter','latex')
-                grid on
-                axis equal
-                xlim([0 16])
-                ylim([-3 3])
-                zlim([-14 14])
+                title(ax,'Structure Simulation',['Time Elapsed: ',num2str(T(i),'%.3f'),' s'],'interpreter','latex','fontsize',10)
+                xlabel(ax,'x [m]','interpreter','latex','FontSize',9)
+                ylabel(ax,'y [m]','interpreter','latex','FontSize',9)
+                zlabel(ax,'z [m]','interpreter','latex','FontSize',9)
+                grid(ax,'on')
+                axis(ax,'equal')
+                xlim(ax,[-6 16])
+                ylim(ax,[-12 12])
+                zlim(ax,[-14 14])
+                %view(ax,0,25)
+                
+%                 % Equilibrium Position:
+%                 surf(ax2,X3D_def,Y3D_def,Z3D_def,'facecolor',[1 0.5 0],'linestyle','none');
+%                 hold(ax2,'on')
+%                 plot3(ax2,X3D_def(:),Y3D_def(:),Z3D_def(:),'color',[0.5 0.5 0.5]);
+%                 %set(ax2,'XLimMode','manual','YLimMode','manual','ZLimMode','manual');
+%                 title(ax2,'Equilibrium Position','interpreter','latex','FontSize',8)
+%                 xlabel(ax2,'x [m]','interpreter','latex','FontSize',7)
+%                 ylabel(ax2,'y [m]','interpreter','latex','FontSize',7)
+%                 zlabel(ax2,'z [m]','interpreter','latex','FontSize',7)
+%                 grid(ax2,'on')
+%                 axis(ax2,'equal')
+%                 xlim(ax2,[-0 16])
+%                 ylim(ax2,[-3 3])
+%                 zlim(ax2,[-5 5])
+
+                % Tip Position:
+                fig11 = plot(ax3,T(1),r_tip(1,1),'-b','linewidth',1.5);
+                hold(ax3,'on')
+                fig12 = plot(ax3,T(1),r_tip(1,2),'-r','linewidth',1.5);
+                fig13 = plot(ax3,T(1),r_tip(1,3),'-k','linewidth',1.5);
+                %title(ax3,'Tip Position','interpreter','latex','FontSize',9)
+                xlabel(ax3,'t [s]','interpreter','latex','FontSize',9)
+                ylabel(ax3,'Tip Position [m]','interpreter','latex','FontSize',9)
+                grid(ax3,'on')
+                xlim(ax3,[0 T(end)])
+                ylim(ax3,[-16 16])
+
+                % Tip Twist Angle:
+                if any(strcmp(DoF,'Torsion'))
+                    fig14 = plot(ax2,T(1),rad2deg(sum(X(1,end-beam(i_beam).n_element + 1:end))),'-b','linewidth',1.5);
+                    hold(ax2,'on')
+                else
+                    fig14 = plot(ax2,T(1),0,'-b','linewidth',1.5);
+                    hold(ax2,'on')
+                end
+                % title(ax2,'Tip Twist Angle','interpreter','latex','FontSize',9)
+                xlabel(ax2,'t [s]','interpreter','latex','FontSize',9)
+                ylabel(ax2,'Tip Twist Angle [deg]','interpreter','latex','FontSize',9)
+                grid(ax2,'on')
+                xlim(ax2,[0 T(end)])
+                %ylim(ax2,[-16 16])
+                
             else
                 set(0, 'CurrentFigure', f)
                 set(fig1,'XData',X3D_def,'YData',Y3D_def,'ZData',Z3D_def);
+                title(ax,'Structure Simulation',['Time Elapsed: ',num2str(T(i),'%.3f'),' s'],'interpreter','latex')
                 set(fig2,'XData',X3D_def(:),'YData',Y3D_def(:),'ZData',Z3D_def(:));
+                set(fig11,'XData',T(1:i),'YData',r_tip(1:i,1));
+                set(fig12,'XData',T(1:i),'YData',r_tip(1:i,2));
+                set(fig13,'XData',T(1:i),'YData',r_tip(1:i,3));
+                if any(strcmp(DoF,'Torsion'))
+                    set(fig14,'XData',T(1:i),'YData',rad2deg(sum(X(1:i,end - beam(i_beam).n_element + 1:end),2)));
+                else
+                    set(fig14,'XData',T(1:i),'YData',zeros(1,i));
+                end
+                %view(ax,360*(i-1)/n_frame,25)
             end
             if isnumeric(varargin{end})
                 element_position(X_r(i,:),DoF);
                 r_ROM = [beam(i_beam).r0(1,:);beam(i_beam).r1];
+                r_tip_ROM(i,:) = r_ROM(end,:);
                 for i_element = 1:beam(i_beam).n_element
                     Xsection_0 = beam(i_beam).element(i_element).C_d0'*[Xsection_data(:,3) beam(i_beam).element(i_element).c*(Xsection_data(:,1)-beam(i_beam).yCM) beam(i_beam).element(i_element).c*(Xsection_data(:,2)-beam(i_beam).zCM)].';
                     r0_Xsection_0_def = (r_ROM(i_element,:) + Xsection_0.').';
@@ -135,23 +197,52 @@ for i = 1:n_frame
                     Z3D_def(:,2*i_element-1:2*i_element) = [r0_Xsection_0_def(3,:).' r1_Xsection_0_def(3,:).'];
                 end
                 if i == 1
+                    % Structure's instant position:
                     fig3 = surf(ax,X3D_def,Y3D_def,Z3D_def,'facecolor',[0.3010 0.7450 0.9330],'linestyle','none');
                     fig4 = plot3(ax,X3D_def(:),Y3D_def(:),Z3D_def(:),'color',[0.5 0.5 0.5]);
-                    legend([fig1 fig3],'FOM','ROM','Position',[0.68 0.88 0.05 0.05])
+                    legend(ax,[fig1 fig3],'FOM','ROM','location','northeast','interpreter','latex','FontSize',9);%,[0.68 0.88 0.05 0.05])
+                    
+                    % % Equilibrium Position:
+                    % surf(ax2,X3D_def,Y3D_def,Z3D_def,'facecolor',[0.3010 0.7450 0.9330],'linestyle','none');
+                    % plot3(ax2,X3D_def(:),Y3D_def(:),Z3D_def(:),'color',[0.5 0.5 0.5]);
+                    
+                    % Tip Position:
+                    fig21 = plot(ax3,T(1),r_ROM(end,1),'-c','linewidth',1.5);
+                    fig22 = plot(ax3,T(1),r_ROM(end,2),'-m','linewidth',1.5);
+                    fig23 = plot(ax3,T(1),r_ROM(end,3),'-','color',[0.5 0.5 0.5],'linewidth',1.5);
+                    legend([fig11 fig12 fig13 fig21 fig22 fig23],'x - FOM','y - FOM','z - FOM','x - ROM','y - ROM','z - ROM','location','northeast','interpreter','latex','FontSize',8);
+
+                    % Tip Twist Angle:
+                    if any(strcmp(DoF,'Torsion'))
+                        fig24 = plot(ax2,T(1),rad2deg(sum(X_r(1,end-beam(i_beam).n_element + 1:end))),'-c','linewidth',1.5);
+                    else
+                        fig24 = plot(ax2,T(1),0,'-c','linewidth',1.5);
+                    end
+                    legend([fig14 fig24],'FOM','ROM','location','northeast','interpreter','latex','FontSize',8);
+
                 else
                     set(0, 'CurrentFigure', f)
                     set(fig3,'XData',X3D_def,'YData',Y3D_def,'ZData',Z3D_def);
                     set(fig4,'XData',X3D_def(:),'YData',Y3D_def(:),'ZData',Z3D_def(:));
+                    set(fig21,'XData',T(1:i),'YData',r_tip_ROM(1:i,1));
+                    set(fig22,'XData',T(1:i),'YData',r_tip_ROM(1:i,2));
+                    set(fig23,'XData',T(1:i),'YData',r_tip_ROM(1:i,3));
+                    if any(strcmp(DoF,'Torsion'))
+                        set(fig24,'XData',T(1:i),'YData',rad2deg(sum(X_r(1:i,end - beam(i_beam).n_element + 1:end),2)));
+                    else
+                        set(fig24,'XData',T(1:i),'YData',zeros(1,i));
+                    end
                 end
-                str = {['Time elapsed: ',num2str(T(i),'%.3f'),' s'],['Tip Position: ','$\hspace{0.7cm}$','FOM','$\hspace{1.8cm}$','ROM'],['$\hspace{1cm}$','x-axis: ',num2str(r(end,1),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,1),'%.4e'),' m'],['$\hspace{1cm}$','y-axis: ',num2str(r(end,2),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,2),'%.4e'),' m'],['$\hspace{1cm}$','z-axis: ',num2str(r(end,3),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,3),'%.4e'),' m']};
-                annotation('textbox',[0.2, 0.85, 0.1, 0.1],'String',str,'LineStyle','none','FitBoxToText','on','FontSize',10,'interpreter','latex');
+                %str = {['Time elapsed: ',num2str(T(i),'%.3f'),' s']};%,['Tip Position: ','$\hspace{0.7cm}$','FOM','$\hspace{1.8cm}$','ROM'],['$\hspace{1cm}$','x-axis: ',num2str(r(end,1),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,1),'%.4e'),' m'],['$\hspace{1cm}$','y-axis: ',num2str(r(end,2),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,2),'%.4e'),' m'],['$\hspace{1cm}$','z-axis: ',num2str(r(end,3),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,3),'%.4e'),' m']};
+                %annotation('textbox',[0.1, 0.85, 0.1, 0.1],'String',str,'LineStyle','none','FitBoxToText','on','FontSize',9,'interpreter','latex');
             else
-                str = {['Time elapsed: ',num2str(T(i),'%.3f'),' s'],['Tip Position: x-axis: ',num2str(r(end,1),'%.3f'),' m'],['$\hspace{2.15cm}$','y-axis: ',num2str(r(end,2),'%.3f'),' m'],['$\hspace{2.15cm}$','z-axis: ',num2str(r(end,3),'%.3f'),' m']};
-                annotation('textbox',[0.2, 0.85, 0.1, 0.1],'String',str,'edgecolor','w','FitBoxToText','on','FontSize',10,'interpreter','latex');
+                %str = {['Time elapsed: ',num2str(T(i),'%.3f'),' s']};%,['Tip Position: x-axis: ',num2str(r(end,1),'%.3f'),' m'],['$\hspace{2.15cm}$','y-axis: ',num2str(r(end,2),'%.3f'),' m'],['$\hspace{2.15cm}$','z-axis: ',num2str(r(end,3),'%.3f'),' m']};
+                %annotation('textbox',[0.1, 0.85, 0.1, 0.1],'String',str,'edgecolor','w','FitBoxToText','on','FontSize',9,'interpreter','latex');
+                legend([fig11 fig12 fig13],'x','y','z','location','northeast','interpreter','latex','fontsize',8);
             end
         end
     end
-    hold off
+    
 
     if any(strcmp(varargin,'gif'))
         if i == 1
@@ -181,7 +272,7 @@ for i = 1:n_frame
     else
         progressbar(i/length(T)*100,t_rem);
     end
-    delete(findall(f,'type','annotation')) % clears annotation to update in the next iteration
+    %delete(findall(f,'type','annotation')) % clears annotation to update in the next iteration
 end
 if any(strcmp(varargin,'gif'))
     winopen(gif_filename);

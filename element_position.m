@@ -8,6 +8,7 @@ for i_beam = 1:length(beam)
     beam(i_beam).r1 = zeros(n,3);
     beam(i_beam).rCM = zeros(n,3);
     r0_0_element = beam(i_beam).element(1).r0;
+    
     for i_element = 1:n
         C_i0 = beam(i_beam).C_i0;
         C_di = eye(3);
@@ -36,7 +37,7 @@ for i_beam = 1:length(beam)
 
         if any(strcmp(DoF,'Axial')) && any(strcmp(DoF,'InBend')) && any(strcmp(DoF,'OutBend'))
             r1_d_element = C_d0*r0_0_element + [beam(i_beam).L_element + q(i_element+2*n);0;0];
-        elseif any(strcmp(DoF,'Axial')) && ~any(strcmp(DoF,'InBend')) && any(strcmp(DoF,'OutBend')) || any(strcmp(DoF,'InBend')) && ~any(strcmp(DoF,'OutBend'))
+        elseif any(strcmp(DoF,'Axial')) && ~any(strcmp(DoF,'InBend')) && any(strcmp(DoF,'OutBend')) || any(strcmp(DoF,'Axial')) && any(strcmp(DoF,'InBend')) && ~any(strcmp(DoF,'OutBend'))
             r1_d_element = C_d0*r0_0_element + [beam(i_beam).L_element + q(i_element+n);0;0];
         elseif any(strcmp(DoF,'Axial')) && ~any(strcmp(DoF,'InBend')) && ~any(strcmp(DoF,'OutBend'))
             r1_d_element = C_d0*r0_0_element + [beam(i_beam).L_element + q(i_element);0;0];
@@ -48,6 +49,7 @@ for i_beam = 1:length(beam)
         beam(i_beam).r0(i_element,:) = r0_0_element.';
         beam(i_beam).r1(i_element,:) = (C_d0.'*r1_d_element).';
         beam(i_beam).rCM(i_element,:) = (beam(i_beam).r0(i_element,:) + beam(i_beam).r1(i_element,:))/2;
+        %beam(i_beam).rCM(i_element,3) = beam(i_beam).rCM(i_element,3) + beam(i_beam).element(i_element).c*beam(i_beam).yCM; 
         r0_0_element = C_d0.'*r1_d_element;
     end
     rCM = reshape(beam(i_beam).rCM,[],1);

@@ -1,11 +1,12 @@
-function animation(T,X,DoF,type,filename,varargin)
+function animation(T,X,H,DoF,element,filename,varargin)
 
 progressbar('loading animation...');
 global beam
 addpath CrossSectionData
 
 if isnumeric(varargin{end})
-    X_r = varargin{end};
+    X_r = varargin{end-1};
+    H_r = varargin{end};
 end
 
 n_frame = length(T);
@@ -31,9 +32,10 @@ if any(strcmp(varargin,'avi'))
     end
     v.FrameRate = id - 1;
     open(v);
-    ax = subplot(2,2,[1,3]);
-    ax3 = subplot(2,2,2);
-    ax2 = subplot(2,2,4);
+    ax = subplot(3,2,[1,3]);
+    ax3 = subplot(3,2,2);
+    ax2 = subplot(3,2,4);
+    ax4 = subplot(3,2,6);
 end
 if isempty(varargin)
     error('File extension not supported or not specified! Valid options are: "gif", "avi" or both.')
@@ -48,7 +50,7 @@ for i = 1:n_frame
         r = [beam(i_beam).r0(1,:);beam(i_beam).r1];
         rCM = beam(i_beam).rCM;
         r_tip(i,:) = r(end,:);
-        if any(strcmp(type,'1D'))
+        if any(strcmp(element,'1D'))
             if i == 1
                 fig(1) = plot3(ax,r(:,1),r(:,2),r(:,3),'-|k','markersize',2,'markerfacecolor','k');
                 hold on
@@ -88,7 +90,7 @@ for i = 1:n_frame
             end
 
 
-        elseif any(strcmp(type,'3D'))
+        elseif any(strcmp(element,'3D'))
             Xsection = beam(i_beam).Xsection;
             if endsWith(Xsection,'.txt') == 1
                 Xsection_data = readtable(Xsection);
@@ -127,21 +129,6 @@ for i = 1:n_frame
                 zlim(ax,[-14 14])
                 %view(ax,0,25)
                 
-%                 % Equilibrium Position:
-%                 surf(ax2,X3D_def,Y3D_def,Z3D_def,'facecolor',[1 0.5 0],'linestyle','none');
-%                 hold(ax2,'on')
-%                 plot3(ax2,X3D_def(:),Y3D_def(:),Z3D_def(:),'color',[0.5 0.5 0.5]);
-%                 %set(ax2,'XLimMode','manual','YLimMode','manual','ZLimMode','manual');
-%                 title(ax2,'Equilibrium Position','interpreter','latex','FontSize',8)
-%                 xlabel(ax2,'x [m]','interpreter','latex','FontSize',7)
-%                 ylabel(ax2,'y [m]','interpreter','latex','FontSize',7)
-%                 zlabel(ax2,'z [m]','interpreter','latex','FontSize',7)
-%                 grid(ax2,'on')
-%                 axis(ax2,'equal')
-%                 xlim(ax2,[-0 16])
-%                 ylim(ax2,[-3 3])
-%                 zlim(ax2,[-5 5])
-
                 % Tip Position:
                 fig11 = plot(ax3,T(1),r_tip(1,1),'-b','linewidth',1.5);
                 hold(ax3,'on')
@@ -162,13 +149,21 @@ for i = 1:n_frame
                     fig14 = plot(ax2,T(1),0,'-b','linewidth',1.5);
                     hold(ax2,'on')
                 end
-                % title(ax2,'Tip Twist Angle','interpreter','latex','FontSize',9)
                 xlabel(ax2,'t [s]','interpreter','latex','FontSize',9)
                 ylabel(ax2,'Tip Twist Angle [deg]','interpreter','latex','FontSize',9)
                 grid(ax2,'on')
                 xlim(ax2,[0 T(end)])
                 %ylim(ax2,[-16 16])
                 
+                % Hamiltonian:
+                fig15 = plot(ax4,T(1),H(1),'-r','linewidth',1.5);
+                hold(ax4,'on')
+                xlabel(ax4,'t [s]','interpreter','latex','FontSize',9)
+                ylabel(ax4,'$\mathcal{H}$ [J]','interpreter','latex','FontSize',9)
+                grid(ax4,'on')
+                xlim(ax4,[0 T(end)])
+                %ylim(ax4,[-16 16])
+
             else
                 set(0, 'CurrentFigure', f)
                 set(fig1,'XData',X3D_def,'YData',Y3D_def,'ZData',Z3D_def);
@@ -182,6 +177,7 @@ for i = 1:n_frame
                 else
                     set(fig14,'XData',T(1:i),'YData',zeros(1,i));
                 end
+                set(fig15,'XData',T(1:i),'YData',H(1:i));
                 %view(ax,360*(i-1)/n_frame,25)
             end
             if isnumeric(varargin{end})
@@ -220,6 +216,10 @@ for i = 1:n_frame
                     end
                     legend([fig14 fig24],'FOM','ROM','location','northeast','interpreter','latex','FontSize',8);
 
+                    % Hamiltonian:
+                    fig25 = plot(ax4,T(1),H_r(1),'-m','linewidth',1.5);
+                    legend([fig15 fig25],'FOM','ROM','location','northeast','interpreter','latex','FontSize',8);
+
                 else
                     set(0, 'CurrentFigure', f)
                     set(fig3,'XData',X3D_def,'YData',Y3D_def,'ZData',Z3D_def);
@@ -232,6 +232,7 @@ for i = 1:n_frame
                     else
                         set(fig24,'XData',T(1:i),'YData',zeros(1,i));
                     end
+                    set(fig25,'XData',T(1:i),'YData',H_r(1:i));
                 end
                 %str = {['Time elapsed: ',num2str(T(i),'%.3f'),' s']};%,['Tip Position: ','$\hspace{0.7cm}$','FOM','$\hspace{1.8cm}$','ROM'],['$\hspace{1cm}$','x-axis: ',num2str(r(end,1),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,1),'%.4e'),' m'],['$\hspace{1cm}$','y-axis: ',num2str(r(end,2),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,2),'%.4e'),' m'],['$\hspace{1cm}$','z-axis: ',num2str(r(end,3),'%.4e'),' m','$\hspace{0.5cm}$',num2str(r_ROM(end,3),'%.4e'),' m']};
                 %annotation('textbox',[0.1, 0.85, 0.1, 0.1],'String',str,'LineStyle','none','FitBoxToText','on','FontSize',9,'interpreter','latex');

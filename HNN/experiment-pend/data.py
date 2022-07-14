@@ -15,7 +15,9 @@ def hamiltonian_fn(coords):
 def dynamics_fn(t, coords):
     dcoords = autograd.grad(hamiltonian_fn)(coords)
     dqdt, dpdt = np.split(dcoords,2)
+    
     S = np.concatenate([dpdt, -dqdt], axis=-1)
+    print(S)
     return S
 
 def get_trajectory(t_span=[0,3], timescale=15, radius=None, y0=None, noise_std=0.1, **kwargs):
@@ -32,6 +34,7 @@ def get_trajectory(t_span=[0,3], timescale=15, radius=None, y0=None, noise_std=0
     q, p = spring_ivp['y'][0], spring_ivp['y'][1]
     dydt = [dynamics_fn(None, y) for y in spring_ivp['y'].T]
     dydt = np.stack(dydt).T
+    print(dydt)
     dqdt, dpdt = np.split(dydt,2)
     
     # add noise
@@ -39,7 +42,7 @@ def get_trajectory(t_span=[0,3], timescale=15, radius=None, y0=None, noise_std=0
     p += np.random.randn(*p.shape)*noise_std
     return q, p, dqdt, dpdt, t_eval
 
-def get_dataset(seed=0, samples=50, test_split=0.5, **kwargs):
+def get_dataset(seed=0, samples=1, test_split=0.5, **kwargs):
     data = {'meta': locals()}
 
     # randomly sample inputs
@@ -60,7 +63,7 @@ def get_dataset(seed=0, samples=50, test_split=0.5, **kwargs):
         split_data[k], split_data['test_' + k] = data[k][:split_ix], data[k][split_ix:]
     data = split_data
     return data
-
+data = get_dataset()
 def get_field(xmin=-1.2, xmax=1.2, ymin=-1.2, ymax=1.2, gridsize=20):
     field = {'meta': locals()}
 

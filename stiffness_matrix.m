@@ -2,6 +2,7 @@ function K = stiffness_matrix(DoF)
 
 global beam
 n_beam = length(beam);
+
 for i_beam = 1:n_beam
     syms x
     xtest = [beam(i_beam).element(1).x0_element; vertcat(beam(i_beam).element.x1_element)];
@@ -14,7 +15,13 @@ for i_beam = 1:n_beam
     % Static solution of Euler-Bernoulli's beam equation - out-of-plane bending:
     if any(strcmp(DoF,'OutBend'))
         syms z(x)
-        p_EIyy = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EIyy),2);
+        if beam(i_beam).n_element < 2
+            p_EIyy = beam(i_beam).element.EIyy;
+        elseif beam(i_beam).n_element < 3
+            p_EIyy = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EIyy),1);
+        else
+            p_EIyy = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EIyy),2);
+        end
         EIyy(x) = poly2sym(p_EIyy,x);
         dz = diff(z,x,1);
         d2z = diff(z,x,2);
@@ -47,7 +54,13 @@ for i_beam = 1:n_beam
     % Static solution of Euler-Bernoulli's beam equation - in-plane bending:
     if any(strcmp(DoF,'InBend'))
         syms y(x)
-        p_EIzz = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EIzz),2);
+        if beam(i_beam).n_element < 2
+            p_EIzz = vertcat(beam(i_beam).element.EIzz);
+        elseif beam(i_beam).n_element < 3
+            p_EIzz = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EIzz),1);
+        else
+            p_EIzz = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EIzz),2);
+        end
         EIzz(x) = poly2sym(p_EIzz,x);
         dy = diff(y,x,1);
         d2y = diff(y,x,2);
@@ -80,7 +93,13 @@ for i_beam = 1:n_beam
     % Static solution of beam under axial load:
     if any(strcmp(DoF,'Axial'))
         syms del(x)
-        p_EA = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EA),2);
+        if beam(i_beam).n_element < 2
+            p_EA = beam(i_beam).element.EA;
+        elseif beam(i_beam).n_element < 3
+            p_EA = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EA),1);
+        else
+            p_EA = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.EA),2);
+        end
         EA(x) = poly2sym(p_EA,x);
         BC = del(0) == 0;
         del(x) = dsolve(diff(del,x,1) == 1/EA,BC);
@@ -99,7 +118,13 @@ for i_beam = 1:n_beam
     % Static solution of Saint Venant's beam equation - torsion:
     if any(strcmp(DoF,'Torsion'))
         syms phi(x)
-        p_GJ = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.GJ),2);
+        if beam(i_beam).n_element < 2
+            p_GJ = beam(i_beam).element.GJ;
+        elseif beam(i_beam).n_element < 3
+            p_GJ = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.GJ),1);
+        else
+            p_GJ = polyfit(vertcat(beam(i_beam).element.x1_element),vertcat(beam(i_beam).element.GJ),2);
+        end
         GJ(x) = poly2sym(p_GJ,x);
         BC = phi(0) == 0;
         phi(x) = dsolve(diff(phi,x,1) == 1/GJ,BC);

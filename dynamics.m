@@ -1,4 +1,4 @@
-function Xdot = dynamics(t,X,M,K,C,DoF,gravity,model,phi_r)
+function Xdot = dynamics(t,X,M,I,K,C,DoF,gravity,model,phi_r)
 %%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION OVERVIEW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   The function dynamics(t,X,M,K,C) returns the equations of motion of the
 %   system using Hamiltonian mechanics.
@@ -22,39 +22,23 @@ function Xdot = dynamics(t,X,M,K,C,DoF,gravity,model,phi_r)
 global beam
 n_DoF = length(DoF)*sum(vertcat(beam.n_element));
 if any(strcmp(model,'FOM'))
-%     [~,JqCM] = dlfeval(@(q) element_positionCM(q,DoF,'gradient'),dlarray(X(n_DoF+1:end)));
-%     JqCM = extractdata(JqCM);
+    %     [~,JqCM] = dlfeval(@(q) element_positionCM(q,DoF,'gradient'),dlarray(X(n_DoF+1:end)));
+    %     JqCM = extractdata(JqCM);
     JqCM = complexstep(@(q) element_positionCM(q,DoF),X(n_DoF+1:end)); % Numerical calculation of the Jacobian of the generalized coordinates using the complex step approach
-    Q = generalized_force(t,X(n_DoF+1:end),JqCM,DoF,gravity);
+    [Q,~,~,~] = generalized_force(t,X(n_DoF+1:end),JqCM,DoF,gravity);
 
-    if ~any(strcmp(DoF,'Torsion'))
-        qdot = (JqCM.'*M*JqCM)\X(1:n_DoF);
-        pdot = -K*X(n_DoF+1:end) - C*qdot + Q;
-    else
-        I_i = 0.1;
-        T = blkdiag(zeros(n_DoF-sum(vertcat(beam.n_element))),eye(sum(vertcat(beam.n_element))));
-        I = I_i*eye(n_DoF);
-        qdot = (JqCM.'*M*JqCM + T.'*I*T)\X(1:n_DoF);
-        pdot = -K*X(n_DoF+1:end) - C*qdot + Q;
-    end
-    
+    qdot = (JqCM.'*M*JqCM + I)\X(1:n_DoF);
+    pdot = -K*X(n_DoF+1:end) - C*qdot + Q;
+
     Xdot = [pdot;qdot];
 
 elseif any(strcmp(model,'ROM'))
     r = size(phi_r,2);
     JqCM = complexstep(@(q) element_positionCM(q,DoF),phi_r*X(r+1:end)); % Numerical calculation of the Jacobian of the generalized coordinates using the complex step approach
-    Q = generalized_force(t,phi_r*X(r+1:end),JqCM,DoF,gravity);
+    [Q,~,~,~] = generalized_force(t,phi_r*X(r+1:end),JqCM,DoF,gravity);
 
-    if ~any(strcmp(DoF,'Torsion'))
-        etadot = (phi_r.'*JqCM.'*M*JqCM*phi_r)\X(1:r);
-        prdot = -(phi_r.'*K*phi_r)*X(r+1:end) - (phi_r.'*C*phi_r)*etadot + phi_r.'*Q;
-    else
-        I_i = 0.1;
-        T = blkdiag(zeros(n_DoF-sum(vertcat(beam.n_element))),eye(sum(vertcat(beam.n_element))));
-        I = I_i*eye(n_DoF);
-        etadot = (phi_r.'*JqCM.'*M*JqCM*phi_r + phi_r.'*T.'*I*T*phi_r)\X(1:r);
-        prdot = -(phi_r.'*K*phi_r)*X(r+1:end) - (phi_r.'*C*phi_r)*etadot + phi_r.'*Q;
-    end
+    etadot = (phi_r.'*JqCM.'*M*JqCM*phi_r + phi_r.'*I*phi_r)\X(1:r);
+    prdot = -(phi_r.'*K*phi_r)*X(r+1:end) - (phi_r.'*C*phi_r)*etadot + phi_r.'*Q;
 
     Xdot = [prdot;etadot];
 else

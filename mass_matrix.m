@@ -1,4 +1,4 @@
-function M = mass_matrix(DoF)
+function [M,I] = mass_matrix(DoF)
 %%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION OVERVIEW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   The function mass_matrix returns the mass matrix of the system. 
 %   INPUTS: N/A
@@ -21,5 +21,15 @@ for i_beam = 1:n_beam
     beam(i_beam).M = diag(repmat(M_element,1,3));
 end
 M = blkdiag(beam.M);
+
+if any(strcmp(DoF,'Torsion'))
+    n_DoF = length(DoF)*sum(vertcat(beam.n_element));
+    I_i = 0.1;
+    T = blkdiag(zeros(n_DoF-sum(vertcat(beam.n_element))),eye(sum(vertcat(beam.n_element))));
+    I = I_i*eye(n_DoF);
+    I = T.'*I*T;
+else
+    I = 0;
+end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% END OF FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

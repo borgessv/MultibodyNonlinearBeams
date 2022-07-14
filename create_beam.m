@@ -1,7 +1,12 @@
 function beam = create_beam(beam_data)
 
 addpath CrossSectionData
-addpath 'Support Codes'
+addpath SupportCodes
+
+if ischar(beam_data)
+    beam_data = convertCharsToStrings(beam_data);
+else
+end
 
 % Reading input file and creating arrays for the properties of the beams:
 [beam_properties,Xsection] = xlsread(beam_data);

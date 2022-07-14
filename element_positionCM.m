@@ -57,12 +57,12 @@ for i_beam = 1:length(beam)
         beam(i_beam).element(i_element).C_d0 = real(C_d0);
         beam(i_beam).element(i_element).C_zy = real(C_zy);
         beam(i_beam).element(i_element).C_t = real(C_t);
-        beam(i_beam).r0(i_element,:) = r0_0_element.';
+        beam(i_beam).r0(i_element,:) = real(r0_0_element).';
         r0 = r0_0_element.';
         r1 = (C_d0.'*r1_d_element).';
         rCM(i_element,:,i_beam) = (r0+r1)/2;
-        beam(i_beam).r1(i_element,:) = (C_d0.'*r1_d_element).';
-        beam(i_beam).rCM(i_element,:) = (beam(i_beam).r0(i_element,:) + beam(i_beam).r1(i_element,:))/2;
+        beam(i_beam).r1(i_element,:) = real(C_d0.'*r1_d_element).';
+        beam(i_beam).rCM(i_element,:) = real((beam(i_beam).r0(i_element,:) + beam(i_beam).r1(i_element,:))/2);
         %r_CM
         beam(i_beam).rCM(i_element,2) = beam(i_beam).rCM(i_element,2) - beam(i_beam).element(i_element).c*beam(i_beam).yCM; 
         rCM(i_element,2,i_beam) = rCM(i_element,2,i_beam) - beam(i_beam).element(i_element).c*beam(i_beam).yCM;

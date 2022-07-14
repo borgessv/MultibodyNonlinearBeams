@@ -8,7 +8,6 @@ import scipy.integrate
 solve_ivp = scipy.integrate.solve_ivp
 
 def hamiltonian_fn(coords):
-    print(coords)
     q, p = np.split(coords,2)
     H = p**2 + q**2 # spring hamiltonian (linear oscillator)
     return H

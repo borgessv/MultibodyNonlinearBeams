@@ -10,5 +10,5 @@ lambda = diag(eigval);
 [~,i_order] = sort(lambda);
 phi = eigvec(:,i_order);
 phi_r = phi(:,1:n_modes);
-progressbar('concluded')
+progressbar('done')
 end

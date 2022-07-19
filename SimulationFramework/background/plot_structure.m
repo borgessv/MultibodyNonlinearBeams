@@ -1,7 +1,6 @@
 function plot_structure(X,DoF,type,varargin)
 
 global beam
-addpath CrossSectionData
 
 if ~isempty(varargin) && isnumeric(varargin{end})
     X_r = varargin{end};
@@ -11,11 +10,12 @@ figure
 %set(gcf, 'Position',  [250, 42, 750, 645])
 set(gcf,'color','w');
 
-element_position(X,DoF);
 for i_beam = 1:length(beam)
-    r = [beam(i_beam).r0(1,:);beam(i_beam).r1];
-    rCM = beam(i_beam).rCM;
     if any(strcmp(type,'1D'))
+        element_positionCM(X,DoF);
+        r = [beam(i_beam).r0(1,:);beam(i_beam).r1];
+        rCM = beam(i_beam).rCM;
+        r(:,2) = [rCM(1,2);rCM(:,2)];
         fig1 = plot3(r(:,1),r(:,2),r(:,3),'-|k','markersize',2,'markerfacecolor','k');
         hold on
         plot3(rCM(:,1),rCM(:,2),rCM(:,3),'sr','markersize',2,'markerfacecolor','r');
@@ -30,15 +30,20 @@ for i_beam = 1:length(beam)
         zlim([(min(r(:,3))-max(vertcat(beam.element.c))) (max(r(:,3))+max(vertcat(beam.element.c)))])
 
         if ~isempty(varargin) && isnumeric(varargin{end})
-            element_position(X_r,DoF);
+            element_positionCM(X_r,DoF);
             r_ROM = [beam(i_beam).r0(1,:);beam(i_beam).r1];
             rCM_ROM = beam(i_beam).rCM;
+            r_ROM(:,2) = [rCM_ROM(1,2);rCM_ROM(:,2)];
             fig3 = plot3(r_ROM(:,1),r_ROM(:,2),r_ROM(:,3),'-|b','markersize',2,'markerfacecolor','b');
             plot3(rCM_ROM(:,1),rCM_ROM(:,2),rCM_ROM(:,3),'sg','markersize',2,'markerfacecolor','g');
             legend([fig1 fig3],'FOM','ROM','location','northeast')
         end
 
     elseif any(strcmp(type,'3D'))
+        element_positionCM(X,DoF);
+        r = [beam(i_beam).r0(1,:);beam(i_beam).r1];
+        rCM = beam(i_beam).rCM;
+        r(:,2) = [rCM(1,2);rCM(:,2)];
         Xsection = beam(i_beam).Xsection;
         if endsWith(Xsection,'.txt') == 1
             Xsection_data = readtable(Xsection);
@@ -54,7 +59,7 @@ for i_beam = 1:length(beam)
             Xsection_data(:,3) = zeros(length(Xsection_data),1);
         end
         for i_element = 1:beam(i_beam).n_element
-            Xsection_0 = beam(i_beam).element(i_element).C_d0'*[Xsection_data(:,3) beam(i_beam).element(i_element).c*(Xsection_data(:,1)-beam(i_beam).yCM) beam(i_beam).element(i_element).c*(Xsection_data(:,2)-beam(i_beam).zCM)].';
+            Xsection_0 = beam(i_beam).element(i_element).C_d0'*[Xsection_data(:,3) beam(i_beam).element(i_element).c*((Xsection_data(:,1)-0.5)-(beam(i_beam).yCM-0.5)) beam(i_beam).element(i_element).c*Xsection_data(:,2)].';
             r0_Xsection_0_def = (r(i_element,:) + Xsection_0.').';
             r1_Xsection_0_def = (r(i_element+1,:) + Xsection_0.').';
             X3D_def(:,2*i_element-1:2*i_element) = [r0_Xsection_0_def(1,:).' r1_Xsection_0_def(1,:).'];
@@ -70,15 +75,14 @@ for i_beam = 1:length(beam)
         title('Equilibrium Solution','interpreter','latex')
         grid on
         axis equal
-        %xlim([(min(r(:,1))-max(vertcat(beam.element.c))) (max(r(:,1))+max(vertcat(beam.element.c)))])
-        %ylim([(min(r(:,2))-max(vertcat(beam.element.c))) (max(r(:,2))+max(vertcat(beam.element.c)))])
-        %zlim([(min(r(:,3))-max(vertcat(beam.element.c))) (max(r(:,3))+max(vertcat(beam.element.c)))])
 
         if ~isempty(varargin) && isnumeric(varargin{end})
-            element_position(X_r,DoF);
+            element_positionCM(X_r,DoF);
             r_ROM = [beam(i_beam).r0(1,:);beam(i_beam).r1];
+            rCM_ROM = beam(i_beam).rCM;
+            r_ROM(:,2) = [rCM_ROM(1,2);rCM_ROM(:,2)];
             for i_element = 1:beam(i_beam).n_element
-                Xsection_0 = beam(i_beam).element(i_element).C_d0'*[Xsection_data(:,3) beam(i_beam).element(i_element).c*(Xsection_data(:,1)-beam(i_beam).yCM) beam(i_beam).element(i_element).c*(Xsection_data(:,2)-beam(i_beam).zCM)].';
+                Xsection_0 = beam(i_beam).element(i_element).C_d0'*[Xsection_data(:,3) beam(i_beam).element(i_element).c*((Xsection_data(:,1)-0.5)-(beam(i_beam).yCM-0.5)) beam(i_beam).element(i_element).c*Xsection_data(:,2)].';
                 r0_Xsection_0_def = (r_ROM(i_element,:) + Xsection_0.').';
                 r1_Xsection_0_def = (r_ROM(i_element+1,:) + Xsection_0.').';
                 X3D_def(:,2*i_element-1:2*i_element) = [r0_Xsection_0_def(1,:).' r1_Xsection_0_def(1,:).'];

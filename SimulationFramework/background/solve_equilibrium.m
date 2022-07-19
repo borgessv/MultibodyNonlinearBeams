@@ -25,7 +25,7 @@ else
     [eta_eq,~,exitflag] = fsolve(@(X) equilibrium(X,K,DoF,gravity,'ROM',phi_r),x0,options);
     if any(exitflag,1:4)
         Xeq = eta_eq;
-        progressbar('concluded')
+        progressbar('done')
     else
         error('Equilibrium solution could not be found or is not reliable!')
     end

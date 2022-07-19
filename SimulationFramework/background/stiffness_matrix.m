@@ -1,6 +1,5 @@
 function K = stiffness_matrix(DoF)
 
-addpath utils
 progressbar('creating stiffness matrix...')
 global beam
 n_beam = length(beam);

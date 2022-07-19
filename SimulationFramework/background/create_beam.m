@@ -1,9 +1,6 @@
 function beam = create_beam(beam_data)
 progressbar('creating structure...')
 
-addpath CrossSectionData
-addpath utils
-
 if ischar(beam_data)
     beam_data = convertCharsToStrings(beam_data);
 else
@@ -141,6 +138,6 @@ for i_beam = 1:n_beam
         else
         end
     end
-    save beams_data.mat beam
+    save background\beams_data.mat beam
     progressbar('done')
 end

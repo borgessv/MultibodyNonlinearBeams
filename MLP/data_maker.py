@@ -10,59 +10,72 @@ Version: 10-July-2022
 """
 
 import os, sys
-import pandas as pd
 import numpy as np
+import pandas as pd
 import matlab.engine
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
-beam_data_file = parent_dir + "\\beam_data_test.ods"
-beam_data = pd.read_excel(beam_data_file, engine="odf", skiprows=[0])
-
-n_element = beam_data[1][2]
+# Paths where the MATLAB codes are located: 
+eng = matlab.engine.start_matlab()
+eng.addpath(parent_dir + "\\SimulationFramework", nargout= 0)
+eng.addpath(parent_dir + "\\SimulationFramework\\background", nargout= 0)
+eng.addpath(parent_dir + "\\SimulationFramework\\background\\utils", nargout= 0)
+eng.addpath(parent_dir + "\\SimulationFramework\\background\\CrossSectionData", nargout= 0)
 
 def make_dataset(seed=0, samples=20, test_split=0.75, **kwargs):
     print('\rCreating dataset... {:.1f}% done'.format(0), end='')
-    eng = matlab.engine.start_matlab()
-    #eng.create_beam("beam_data_test.ods",nargout=0)
-    #data = {'meta': locals()}
-    #np.random.seed(seed)
+    
+    # Model parameters:    
+    model = "FOM"
+    DoF = {"OutBend"}
+    gravity = "GravityOn"
+    
+    # Initializing structure properties:
+    beam_data = "beam_data_test.xlsx"
+    beam = pd.read_excel(parent_dir + "\\SimulationFramework\\" + beam_data)
+    n_DoF = len(DoF)*int(np.sum(np.array(beam.iloc[3,1:])))
+    M, I, K, C = eng.structure_properties(beam_data,DoF,nargout=4)
+    K, C = np.array([[K]]), np.array([[C]])
+    K[0,0] = 0
+    C[0,0] = 0
+    K, C = matlab.double(K), matlab.double(C)
+    
+    # Simulation timestep:
     dt = 0.1
     tf = 10
     tspan = [x*dt for x in range(int(tf/dt + 1))]
+    tspan = matlab.double(tspan)
     
+    # Initial condition parameters:
+    np.random.seed(seed)
     q0max = np.pi
-    p0max = 2*np.pi
-    #q0_initial = q0span[0]*(2*np.random.rand(n_element)-1)
-    #q0_final = q0_initial + (q0span[1]-q0span[0])*(2*np.random.rand()-1)
-    X_data, Xdot_data, H_data = [], [], []
-
+    p0max = 0
+    
+    # Dataset creation loop:
+    X_data, Xdot_data = [], []
     for i in range(samples):
-        
-        q0 = q0max*(2*np.random.rand(n_element)-1) #np.linspace(q0_initial,q0_final,n_element,endpoint=True)[np.newaxis].T
-        p0 = p0max*(2*np.random.rand(n_element)-1)
+        q0 = q0max*(2*np.random.rand(n_DoF)-1) 
+        p0 = p0max*(2*np.random.rand(n_DoF)-1)
         X0 = np.concatenate([p0,q0])
+        X0 = matlab.double(X0)
 
-        out = eng.simulation('FOM',{'OutBend'},'GravityOn',matlab.double(tspan),matlab.double(X0),nargout=3)
-
-        p, q = np.split(np.array(out[0]).T,2)
+        X, Xdot = eng.simulation(model,DoF,gravity,tspan,M,I,K,C,X0,nargout=2)
         
-        X_data.append(np.concatenate([q,p]).T)
+        X = np.array(X)        
+        X_data.append(X)
         
-        pdot, qdot = np.split(np.array(out[1]),2)
-        Xdot_data.append(np.concatenate([qdot,pdot]).T)
-
-        H = np.array(out[2])
-        H_data.append(H)
+        Xdot = np.array(Xdot)        
+        Xdot_data.append(Xdot)
+        
+        #pdot, qdot = np.split(np.array(Xdot).T,2)
+        #Xdot_data.append(np.concatenate([qdot,pdot]).T)
         
         progress_msg = '\rCreating dataset... {:.1f}% done'.format(100*(i+1)/samples)
         print(progress_msg + '\n' if i == samples-1 else progress_msg, end='')
-        
-    
+           
     data = {'X': np.concatenate(np.array(X_data)), 'dX': np.concatenate(np.array(Xdot_data))}
-    #data['X'] = np.concatenate(X_data)
-    #data['dX'] = np.concatenate(Xdot_data)
 
     # make a train/test split
     split_ix = int(len(data['X'])*test_split)

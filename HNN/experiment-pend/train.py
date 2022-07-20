@@ -23,9 +23,9 @@ def get_args():
     parser.add_argument('--total_steps', default=2000, type=int, help='number of gradient steps')
     parser.add_argument('--print_every', default=200, type=int, help='number of gradient steps between prints')
     parser.add_argument('--name', default='pend', type=str, help='only one option right now')
-    parser.add_argument('--baseline', dest='baseline', action='store_true', help='run baseline or experiment?')
+    parser.add_argument('--baseline', dest='baseline', action='store_false', help='run baseline or experiment?')
     parser.add_argument('--use_rk4', dest='use_rk4', action='store_true', help='integrate derivative with RK4')
-    parser.add_argument('--verbose', dest='verbose', action='store_true', help='verbose?')
+    parser.add_argument('--verbose', dest='verbose', action='store_false', help='verbose?')
     parser.add_argument('--field_type', default='solenoidal', type=str, help='type of vector field to learn')
     parser.add_argument('--seed', default=0, type=int, help='random seed')
     parser.add_argument('--save_dir', default=THIS_DIR, type=str, help='where to save the trained model')
@@ -85,6 +85,7 @@ def train(args):
 
 if __name__ == "__main__":
     args = get_args()
+    print(args.use_rk4)
     model, stats = train(args)
 
     # save

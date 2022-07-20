@@ -43,7 +43,7 @@ def train(seed=0, train_steps=2000):
     optim = torch.optim.Adam(model.parameters(), learn_rate, weight_decay=1e-4)
 
     # arrange data
-    data = make_dataset(seed=seed, samples=20)
+    data = get_dataset(seed=seed, samples=50)
     X = torch.tensor(data['X'], requires_grad=True, dtype=torch.float32)
     test_X = torch.tensor(data['test_X'], requires_grad=True, dtype=torch.float32)
     dXdt = torch.Tensor(data['dX'])
@@ -56,7 +56,7 @@ def train(seed=0, train_steps=2000):
         # train step 
         dXdt_hat = model.time_derivative(X)
         loss = L2_loss(dXdt, dXdt_hat)
-        loss.backward(); optim.step(); #optim.zero_grad()
+        loss.backward(); optim.step(); optim.zero_grad()
     
         # run test data
         test_dXdt_hat = model.time_derivative(test_X)

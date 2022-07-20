@@ -15,6 +15,7 @@ def hamiltonian_fn(coords):
 def dynamics_fn(t, coords):
     dcoords = autograd.grad(hamiltonian_fn)(coords)
     dqdt, dpdt = np.split(dcoords,2)
+    
     S = np.concatenate([dpdt, -dqdt], axis=-1)
     return S
 
@@ -39,7 +40,7 @@ def get_trajectory(t_span=[0,3], timescale=15, radius=None, y0=None, noise_std=0
     p += np.random.randn(*p.shape)*noise_std
     return q, p, dqdt, dpdt, t_eval
 
-def get_dataset(seed=0, samples=50, test_split=0.5, **kwargs):
+def get_dataset(seed=0, samples=1, test_split=0.5, **kwargs):
     data = {'meta': locals()}
 
     # randomly sample inputs
@@ -61,7 +62,6 @@ def get_dataset(seed=0, samples=50, test_split=0.5, **kwargs):
     data = split_data
     return data
 
-
 def get_field(xmin=-1.2, xmax=1.2, ymin=-1.2, ymax=1.2, gridsize=20):
     field = {'meta': locals()}
 
@@ -73,6 +73,6 @@ def get_field(xmin=-1.2, xmax=1.2, ymin=-1.2, ymax=1.2, gridsize=20):
     dydt = [dynamics_fn(None, y) for y in ys.T]
     dydt = np.stack(dydt).T
 
-    field['x'] = ys.T
-    field['dx'] = dydt.T
+    field['X'] = ys.T
+    field['dX'] = dydt.T
     return field

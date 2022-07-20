@@ -43,7 +43,5 @@ class NN(torch.nn.Module):
     
     def time_derivative(self, x, t=None, separate_fields=False):
         '''NEURAL ODE-STLE VECTOR FIELD'''
-        y1 = self.differentiable_model(x)
-        #print(y1)
-        return y1
+        return self.differentiable_model(x)
         

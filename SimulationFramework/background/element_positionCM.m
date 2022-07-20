@@ -63,12 +63,10 @@ for i_beam = 1:length(beam)
         rCM(i_element,:,i_beam) = (r0+r1)/2;
         beam(i_beam).r1(i_element,:) = real(C_d0.'*r1_d_element).';
         beam(i_beam).rCM(i_element,:) = real((beam(i_beam).r0(i_element,:) + beam(i_beam).r1(i_element,:))/2);
-        %r_CM
         beam(i_beam).rCM(i_element,2) = beam(i_beam).rCM(i_element,2) + beam(i_beam).element(i_element).c*(beam(i_beam).yCM-0.5); 
         rCM(i_element,2,i_beam) = rCM(i_element,2,i_beam) + beam(i_beam).element(i_element).c*(beam(i_beam).yCM-0.5);
         r0_0_element = C_d0.'*r1_d_element;
     end
-    %rCM = reshape(beam(i_beam).rCM,[],1);
     rCM = reshape(rCM,[],1);
     if any(strcmp(varargin,'gradient'))
     for i = 1:length(rCM)

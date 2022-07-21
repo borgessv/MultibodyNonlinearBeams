@@ -17,7 +17,6 @@ def dynamics_fn(t, coords):
     dqdt, dpdt = np.split(dcoords,2)
     
     S = np.concatenate([dpdt, -dqdt], axis=-1)
-    print(S)
     return S
 
 def get_trajectory(t_span=[0,3], timescale=15, radius=None, y0=None, noise_std=0.1, **kwargs):
@@ -37,10 +36,10 @@ def get_trajectory(t_span=[0,3], timescale=15, radius=None, y0=None, noise_std=0
     dqdt, dpdt = np.split(dydt,2)
     
     # add noise
-    q += np.random.randn(*q.shape)*noise_std
-    p += np.random.randn(*p.shape)*noise_std
-    return q, p, dqdt, dpdt, t_eval
-
+    #q += np.random.randn(*q.shape)*noise_std
+    #p += np.random.randn(*p.shape)*noise_std
+    return q, p, dqdt, dpdt, t_eval, y0
+#q, p, dqdt, dpdt, t_eval, y0 = get_trajectory()
 def get_dataset(seed=0, samples=1, test_split=0.5, **kwargs):
     data = {'meta': locals()}
 
@@ -52,13 +51,13 @@ def get_dataset(seed=0, samples=1, test_split=0.5, **kwargs):
         xs.append( np.stack( [x, y]).T )
         dxs.append( np.stack( [dx, dy]).T )
         
-    data['x'] = np.concatenate(xs)
-    data['dx'] = np.concatenate(dxs).squeeze()
+    data['X'] = np.concatenate(xs)
+    data['dX'] = np.concatenate(dxs).squeeze()
 
     # make a train/test split
-    split_ix = int(len(data['x']) * test_split)
+    split_ix = int(len(data['X']) * test_split)
     split_data = {}
-    for k in ['x', 'dx']:
+    for k in ['X', 'dX']:
         split_data[k], split_data['test_' + k] = data[k][:split_ix], data[k][split_ix:]
     data = split_data
     return data
@@ -74,6 +73,6 @@ def get_field(xmin=-1.2, xmax=1.2, ymin=-1.2, ymax=1.2, gridsize=20):
     dydt = [dynamics_fn(None, y) for y in ys.T]
     dydt = np.stack(dydt).T
 
-    field['x'] = ys.T
-    field['dx'] = dydt.T
+    field['X'] = ys.T
+    field['dX'] = dydt.T
     return field

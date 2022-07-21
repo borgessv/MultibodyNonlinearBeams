@@ -12,6 +12,7 @@ sys.path.append(PARENT_DIR)
 from nn_models import MLP
 from hnn import HNN
 from data import get_dataset
+from data_maker import make_dataset
 from utils import L2_loss, rk4
 
 def get_args():
@@ -48,11 +49,11 @@ def train(args):
   optim = torch.optim.Adam(model.parameters(), args.learn_rate, weight_decay=1e-4)
 
   # arrange data
-  data = get_dataset(seed=args.seed)
-  x = torch.tensor(data['x'], requires_grad=True, dtype=torch.float32)
-  test_x = torch.tensor( data['test_x'], requires_grad=True, dtype=torch.float32)
-  dxdt = torch.Tensor(data['dx'])
-  test_dxdt = torch.Tensor(data['test_dx'])
+  data = make_dataset(seed=args.seed, samples=50)
+  x = torch.tensor(data['X'], requires_grad=True, dtype=torch.float32)
+  test_x = torch.tensor( data['test_X'], requires_grad=True, dtype=torch.float32)
+  dxdt = torch.Tensor(data['dX'])
+  test_dxdt = torch.Tensor(data['test_dX'])
 
   # vanilla train loop
   stats = {'train_loss': [], 'test_loss': []}
@@ -85,7 +86,6 @@ def train(args):
 
 if __name__ == "__main__":
     args = get_args()
-    print(args.use_rk4)
     model, stats = train(args)
 
     # save

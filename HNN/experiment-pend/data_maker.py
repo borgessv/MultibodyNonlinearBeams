@@ -37,15 +37,15 @@ def make_dataset(seed=0, samples=20, test_split=0.5, **kwargs):
     beam = pd.read_excel(parent_dir + "\\SimulationFramework\\" + beam_data)
     n_DoF = len(DoF)*int(np.sum(np.array(beam.iloc[3,1:])))
     M, I, K, C = eng.structure_properties(beam_data,DoF,nargout=4)
-    K, C = np.array([[K]]), np.array([[C]])
-    K[0,0] = 0
-    C[0,0] = 0
-    K, C = matlab.double(K), matlab.double(C)
+    # K = eng.times(1e-2,K)
+    K = matlab.double(K)
+    K[0][0] = 0
+    C = eng.times(5e-5,C)
     
     # Simulation timestep:
     dt = 0.1
     tf = 10
-    tspan = np.linspace(0, 3, int(15*(3-0)))#[x*dt for x in range(int(tf/dt + 1))]
+    tspan = [x*dt for x in range(int(tf/dt + 1))]
     tspan = matlab.double(tspan)
     
     # Initial condition parameters:
@@ -56,17 +56,17 @@ def make_dataset(seed=0, samples=20, test_split=0.5, **kwargs):
     # Dataset creation loop:
     X_data, Xdot_data = [], []
     for i in range(samples):
-        #q0 = q0max*(2*np.random.rand(n_DoF)-1) 
-        #p0 = p0max*(2*np.random.rand(n_DoF)-1)
-        #X0 = np.concatenate([p0,q0])
-        #X0 = matlab.double(X0)
+        q0 = q0max*(2*np.random.rand(n_DoF)-1) 
+        p0 = p0max*(2*np.random.rand(n_DoF)-1)
+        X0 = np.array([np.concatenate([p0,q0])]).T
+        X0 = matlab.double(X0)
         
-        #if y0 is None:
-        y0 = np.random.rand(2)*2.-1
-        #if radius is None:
-        radius = np.random.rand() + 1.3 # sample a range of radii
-        y0 = y0/np.sqrt((y0**2).sum())*radius ## set the appropriate radius
-        X0 = matlab.double(y0)
+        # #if y0 is None:
+        # y0 = np.random.rand(2)*2.-1
+        # #if radius is None:
+        # radius = np.random.rand() + 1.3 # sample a range of radii
+        # y0 = y0/np.sqrt((y0**2).sum())*radius ## set the appropriate radius
+        # X0 = matlab.double(y0)
         
         X, Xdot = eng.simulation(model,DoF,gravity,tspan,M,I,K,C,X0,nargout=2)
         
@@ -75,9 +75,6 @@ def make_dataset(seed=0, samples=20, test_split=0.5, **kwargs):
         
         Xdot = np.array(Xdot)        
         Xdot_data.append(Xdot)
-        
-        #pdot, qdot = np.split(np.array(Xdot).T,2)
-        #Xdot_data.append(np.concatenate([qdot,pdot]).T)
         
         progress_msg = '\rCreating dataset... {:.1f}% done'.format(100*(i+1)/samples)
         print(progress_msg + '\n' if i == samples-1 else progress_msg, end='')
@@ -93,4 +90,4 @@ def make_dataset(seed=0, samples=20, test_split=0.5, **kwargs):
     
     return data
 
-#data = make_dataset(samples=2)
+# data = make_dataset(samples=2)

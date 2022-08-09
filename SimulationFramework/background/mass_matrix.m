@@ -1,4 +1,4 @@
-function [M,I] = mass_matrix(DoF)
+function [M,I] = mass_matrix(DoF,disp_progress)
 %%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION OVERVIEW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   The function mass_matrix returns the mass matrix of the system. 
 %   INPUTS: N/A
@@ -12,7 +12,9 @@ function [M,I] = mass_matrix(DoF)
 %%%%%%%%%%%%%%%%%%%%%%%% BEGINNING OF FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 global beam
-progressbar('creating mass and inertia matrices...')
+if any(strcmp(disp_progress,'True'))
+    progressbar('creating mass and inertia matrices...')
+end
 n_beam = length(beam);
 for i_beam = 1:n_beam
     n = beam(i_beam).n_element;
@@ -33,6 +35,8 @@ if any(strcmp(DoF,'Torsion'))
 else
     I = 0;
 end
-progressbar('done')
+if any(strcmp(disp_progress,'True'))
+    progressbar('done')
+end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% END OF FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

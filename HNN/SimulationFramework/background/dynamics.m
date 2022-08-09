@@ -27,11 +27,11 @@ if any(strcmp(model,'FOM'))
     JqCM = complexstep(@(q) element_positionCM(q,DoF),X(n_DoF+1:end)); % Numerical calculation of the Jacobian of the generalized coordinates using the complex step approach
     [Q,~,~,~] = generalized_force(t,X(n_DoF+1:end),JqCM,DoF,gravity);
     
-    q = X(n_DoF+1:end);
-    p = X(1:n_DoF);
-    f = complexstep(@(q) fun(q,p,M,I,DoF),q);
+    %q = X(n_DoF+1:end);
+    %p = X(1:n_DoF);
+    %f = complexstep(@(q) fun(q,p,M,I,DoF),q);
     qdot = (JqCM.'*M*JqCM + I)\X(1:n_DoF);
-    pdot = -K*X(n_DoF+1:end) - f - C*qdot + Q;
+    pdot = -K*X(n_DoF+1:end) - C*qdot + Q;
 
     Xdot = [pdot;qdot];
 

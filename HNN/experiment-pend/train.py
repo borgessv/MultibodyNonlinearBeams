@@ -12,7 +12,6 @@ sys.path.append(PARENT_DIR)
 from nn_models import MLP
 from hnn import HNN
 from data import get_dataset
-from data_maker import make_dataset
 from utils import L2_loss, rk4
 
 def get_args():
@@ -26,7 +25,7 @@ def get_args():
     parser.add_argument('--name', default='pend', type=str, help='only one option right now')
     parser.add_argument('--baseline', dest='baseline', action='store_false', help='run baseline or experiment?')
     parser.add_argument('--use_rk4', dest='use_rk4', action='store_true', help='integrate derivative with RK4')
-    parser.add_argument('--verbose', dest='verbose', action='store_false', help='verbose?')
+    parser.add_argument('--verbose', dest='verbose', action='store_true', help='verbose?')
     parser.add_argument('--field_type', default='solenoidal', type=str, help='type of vector field to learn')
     parser.add_argument('--seed', default=0, type=int, help='random seed')
     parser.add_argument('--save_dir', default=THIS_DIR, type=str, help='where to save the trained model')
@@ -49,11 +48,11 @@ def train(args):
   optim = torch.optim.Adam(model.parameters(), args.learn_rate, weight_decay=1e-4)
 
   # arrange data
-  data = make_dataset(seed=args.seed, samples=50)
-  x = torch.tensor(data['X'], requires_grad=True, dtype=torch.float32)
-  test_x = torch.tensor( data['test_X'], requires_grad=True, dtype=torch.float32)
-  dxdt = torch.Tensor(data['dX'])
-  test_dxdt = torch.Tensor(data['test_dX'])
+  data = get_dataset(seed=args.seed)
+  x = torch.tensor( data['x'], requires_grad=True, dtype=torch.float32)
+  test_x = torch.tensor( data['test_x'], requires_grad=True, dtype=torch.float32)
+  dxdt = torch.Tensor(data['dx'])
+  test_dxdt = torch.Tensor(data['test_dx'])
 
   # vanilla train loop
   stats = {'train_loss': [], 'test_loss': []}

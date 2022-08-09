@@ -1,5 +1,7 @@
-function beam = create_beam(beam_data)
-progressbar('creating structure...')
+function beam = create_beam(beam_data,disp_progress)
+if any(strcmp(disp_progress,'True'))
+    progressbar('creating structure...')
+end
 
 if ischar(beam_data)
     beam_data = convertCharsToStrings(beam_data);
@@ -139,5 +141,7 @@ for i_beam = 1:n_beam
         end
     end
     %save background\beam_data.mat beam
-    progressbar('done')
+    if any(strcmp(disp_progress,'True'))
+        progressbar('done')
+    end
 end

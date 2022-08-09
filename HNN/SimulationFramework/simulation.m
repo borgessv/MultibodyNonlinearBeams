@@ -8,9 +8,9 @@ global beam
 load beam_data.mat beam
 n_DoF = length(DoF)*sum(cat(1,beam.n_element));
 if ~any(strcmp(varargin,'PlotProgress'))
-    opts = odeset('RelTol',1e-10,'AbsTol',1e-12,'OutputFcn',@(t,X,flag) ode_progress(t,X,flag));
+    opts = odeset('RelTol',1e-4,'AbsTol',1e-6,'OutputFcn',@(t,X,flag) ode_progress(t,X,flag));
 else
-    opts = odeset('RelTol',1e-10,'AbsTol',1e-12,'OutputFcn',@(t,X,flag) ode_progress(t,X,flag,'PlotProgress'));
+    opts = odeset('RelTol',1e-4,'AbsTol',1e-6,'OutputFcn',@(t,X,flag) ode_progress(t,X,flag,'PlotProgress'));
 end
 
 %% Full-Order Model Simulation

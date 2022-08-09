@@ -1,6 +1,8 @@
-function K = stiffness_matrix(DoF)
+function K = stiffness_matrix(DoF,disp_progress)
 
-progressbar('creating stiffness matrix...')
+if any(strcmp(disp_progress,'True'))
+    progressbar('creating stiffness matrix...')
+end
 global beam
 n_beam = length(beam);
 
@@ -147,5 +149,7 @@ for i_beam = 1:n_beam
     end
 end
 K = blkdiag(beam.K);
-progressbar('done')
+if any(strcmp(disp_progress,'True'))
+    progressbar('done')
+end
 end

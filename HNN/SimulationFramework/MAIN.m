@@ -10,10 +10,10 @@ beam_data = 'beam_data_test.xlsx'; % Excel file containing the input properties 
 model = 'FOM'; % Options: 'FOM' for full-order model, 'ROM' for reduced order model by truncation method or 'BOTH' for both models analysis in a single run
 DoF = {'OutBend'}; % Options: 'InBend': in-plane bending; 'OutBend': out-of-plane bending; 'Axial': axial deformation; 'Torsion': torsion
 gravity = 'GravityOn'; % Options: 'GravityOn' to consider gravitational force or 'GravityOff' to disconsider it.
-tspan = linspace(0,3,45);%0:0.1:30; % Period of simulation [s]
+tspan = linspace(0,10,100); %0:0.1:10; % Period of simulation [s]
 
 % INITIAL CONDITIONS:
-IC = [-1.57457573;pi/2+1.067473]; % Options: 'random', 'equilibrium' or [p_1;p_2;...;p_n_DoF;q_1;q_2;...;q_n_DoF] for custom IC 
+IC = [0;1.11725425]; % Options: 'random', 'equilibrium' or [p_1;p_2;...;p_n_DoF;q_1;q_2;...;q_n_DoF] for custom IC 
 p0_max = 0; % Amplitude of gen. momentum's interval (used only if IC='random')
 q0_max = pi; % amplitude of gen. coordinate's interval (used only if IC='random')
 
@@ -28,12 +28,12 @@ animation_file = 'sim_test'; % Filename for the simulation [str]
 %% Initializing Model:
 global beam
 [M,I,K,C] = structure_properties(beam_data,DoF);
-load beam_data.mat beam
+load background\beam_data.mat beam
 n_DoF = length(DoF)*sum(cat(1,beam.n_element));
-
+% K=1e-2*K;
 K(1,1) = 0;
-C(1,1) = 0;
-%C(1,1)=1e-1*C(1,1);
+% C(1,1) = 0;
+%C=1e-1*C;
 
 %% Equilibrium Solution:
 if any(strcmp(IC,'equilibrium')) || any(strcmp(model,'ROM')) || any(strcmp(model,'BOTH'))

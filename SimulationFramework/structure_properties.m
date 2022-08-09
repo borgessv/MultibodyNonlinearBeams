@@ -1,14 +1,19 @@
-function [M,I,K,C] = structure_properties(beam_data,DoF)
-addpath background
+function [M,I,K,C] = structure_properties(beam_data,DoF,disp_progress)
+
 global beam
+beam = create_beam(beam_data,disp_progress);
+n_element = sum(cat(1,beam.n_element));
 
-beam = create_beam(beam_data);
-[M,I] = mass_matrix(DoF);
-K = stiffness_matrix(DoF);
-c = 0.1;
-C = damping_matrix(DoF,K,c);
+[M,I] = mass_matrix(DoF,disp_progress);
 
-filepath = 'C:\Users\Vitor\Documents\Arquivos\MastersDegree\MSc_Thesis\Codes\MultibodyNonlinearBeams\SimulationFramework\background';
-filename = fullfile(filepath, sprintf('beam_data.mat'));
+K = stiffness_matrix(DoF,disp_progress);
+
+c = 0.5;
+C = damping_matrix(DoF,K,c,disp_progress);
+if any(strcmp(DoF,'Torsion'))
+    C(end-n_element:end) = 100*C(end-n_element:end);
+end
+
+filename = fullfile(sprintf('..\\SimulationFramework\\background\\beam_data.mat'));
 save(filename,'beam')
 end

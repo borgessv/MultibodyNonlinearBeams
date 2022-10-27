@@ -1,5 +1,6 @@
-function phi_r = create_rom(n_modes,DoF,M,I,K,Xeq)
+function phi_r = create_rom(n_modes,DoF,Xeq)
 progressbar('creating reduced order model...')
+load beam_data.mat M I K
 Jq_eq = complexstep(@(q) element_positionCM(q,DoF),Xeq);
 [eigvec,eigval] = eig(K,(Jq_eq.'*M*Jq_eq + I));
 lambda = diag(eigval);

@@ -356,7 +356,11 @@ for i = 1:n_frame
     %delete(findall(f,'type','annotation')) % clears annotation to update in the next iteration
 end
 if any(strcmp(varargin,'gif'))
-    winopen(gif_filename);
+    if ispc
+        winopen(gif_filename);
+    else
+        system(['open ', gif_filename]);
+    end
 end
 if any(strcmp(varargin,'avi'))
     close(v)

@@ -112,9 +112,9 @@ for i_beam = 1:n_beam
 
         Ka = zeros(1,length(xtest)-1);
         for i = 2:length(xtest)
-            Ka(i-1) = Ftest(i-1)/deltest(i);
+            Ka(1) = Ftest(i)/(deltest(i)-deltest(i-1));
         end
-        Ka = diag(Ka);
+        Ka = diag(Ka(2:end));
         beam(i_beam).K = blkdiag(beam(i_beam).K,Ka);
     end
 

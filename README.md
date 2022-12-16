@@ -1,6 +1,6 @@
 # MultibodyNonlinearBeams
 
-#To run the Hamiltonian Neural Networks for the pendulum example:
+*** To run the Hamiltonian Neural Networks for the pendulum example:
 
 1 - HNN/experiment_pend/data.py - where you can modify pendulum EoM or simply change the physical properties of the system if needed;
 
@@ -10,7 +10,7 @@ and the other one to action='store_true';
 3 - HNN/analyze-pend.ipynb - run the analysis in the Jupyter notebook.
 
 
-#To run the D-HNN and MLP models associated with Matlab simulations for the beam FOM:
+*** To run the D-HNN and MLP models associated with Matlab simulations for the beam FOM:
 
 1 - SimulationFramework/beam_data_test.xlsx - where you can specify the properties of the beam;
 

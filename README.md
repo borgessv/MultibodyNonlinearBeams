@@ -1,7 +1,8 @@
 # MultibodyNonlinearBeams
-
+\\
 To run the Hamiltonian Neural Networks for the pendulum example:
 1 - HNN/experiment_pend/data.py - where you can modify pendulum EoM or simply change the physical properties of the system if needed;
+\\
 2 - HNN/experiment_pend/train.py - must run this code twice to generate baseline and hnn models, one setting the line 26 to action='store_false' 
 and the other one to action='store_true';
 3 - HNN/analyze-pend.ipynb - run the analysis in the Jupyter notebook.

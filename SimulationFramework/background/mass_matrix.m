@@ -28,8 +28,8 @@ M = blkdiag(beam.M);
 
 if any(strcmp(DoF,'Torsion'))
     n_DoF = length(DoF)*sum(vertcat(beam.n_element));
-    I_i = 0.1;
-    T = blkdiag(zeros(n_DoF-sum(vertcat(beam.n_element))),eye(sum(vertcat(beam.n_element))));
+    I_i = 0.1*beam(i_beam).L_element;
+    T = blkdiag(zeros(n_DoF-sum(vertcat(beam.n_element))),tril(ones(sum(vertcat(beam.n_element)))));
     I = I_i*eye(n_DoF);
     I = T.'*I*T;
 else

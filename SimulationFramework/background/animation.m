@@ -205,7 +205,7 @@ for i = 1:n_frame
                 grid(ax,'on')
                 axis(ax,'equal')
                 lim = 1.1*max(abs(vertcat(beam(i_beam).element.r1)));
-                xlim(ax,[-lim lim])
+                xlim(ax,[0 lim])
                 ylim(ax,[-lim lim])
                 zlim(ax,[-lim lim])
                 %view(ax,0,25)

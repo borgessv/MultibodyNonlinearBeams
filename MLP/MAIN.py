@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 """
-import time, copy
+import time, copy, os, sys
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
@@ -17,6 +17,13 @@ matlab_eng = matlab_interface()
 from IPython import get_ipython
 ipython = get_ipython()
 
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
+if 'windows' in sys.platform:
+    bar = '\\'
+else:
+    bar = '/'
+
 #%% Model parameters and dataset creation:
 def model_args(as_dict=False):
   model_dict = {'matlab_engine': matlab_eng,
@@ -30,8 +37,8 @@ def model_args(as_dict=False):
                 'p0span': [0,0],
                 'q0span': [-np.pi/9,np.pi/9],
                 'train_split': 0.7,
-                'normalize': True,
-                'norm_range': [-1,1],
+                'normalize': False,
+                'norm_range': [0,1],
                 'standardize': False}
   return model_dict if as_dict else ObjectView(model_dict)
 
@@ -67,7 +74,7 @@ def train_args(as_dict=False):
                 'test_every': 1,
                 'print_every': 200,
                 'batch_size': 1001,
-                'total_steps': 20000,  # because we have a synthetic dataset
+                'total_steps': 10000,  # because we have a synthetic dataset
                 'device': 'cpu', # {"cpu", "cuda"} for using GPUs
                 'seed': 0,
                 'as_separate': False,
@@ -98,8 +105,8 @@ n_test = 1
 
 tsim_mlp, tsim_dhnn, tsim_true, t_mlp_true, t_dhnn_true = [], [], [], [], []
 for i in range(n_test):
-    p0_test = (p0span[1]-p0span[0])*np.random.rand(n_DoF) + p0span[0] 
-    q0_test = (q0span[1]-q0span[0])*np.random.rand(n_DoF) + q0span[0]
+    p0_test = 0*((p0span[1]-p0span[0])*np.random.rand(n_DoF) + p0span[0] )
+    q0_test = 0*((q0span[1]-q0span[0])*np.random.rand(n_DoF) + q0span[0])
     X0_test_raw = np.concatenate([p0_test,q0_test])
 
     if model_param.normalize:
@@ -119,15 +126,15 @@ for i in range(n_test):
     X_mlp = integrate_model(mlp_model, tspan, X0_test, n_DoF, **kwargs) # MLP NN model simulation
     tsim_mlp.append(time.time() - t)
 
-    # Run MLP model simulation for the test case
+    # Run DHNN model simulation for the test case
     t = time.time()
-    X_dhnn = integrate_model(dhnn_model, tspan, X0_test, n_DoF, **kwargs) # MLP NN model simulation
+    X_dhnn = integrate_model(dhnn_model, tspan, X0_test, n_DoF, **kwargs) # DHNN model simulation
     tsim_dhnn.append(time.time() - t)
  
     # Run MATLAB simulation for the test case:
     t = time.time()
     X_true = matlab_eng.simulation(model_param.model,model_param.DoF,model_param.gravity,
-                                   matlab.double(tvec),M,I,K,C,matlab.double(X0_test_raw),
+                                   matlab.double(tvec),matlab.double(X0_test_raw),
                                    model_param.disp_progress,nargout=2)[0]
     tsim_true.append(time.time() - t)
     
@@ -163,15 +170,15 @@ else:
 X_true = np.array(X_true)
 
 # Save NN simulation results:
-# sio.savemat('test.mat', {'X_MLP': X_MLP, 'X_DHNN': X_DHNN})
+sio.savemat(parent_dir + bar + "SimulationFramework" + bar + "test_results" + bar + "test.mat", {'X_FOM': X_true, 'X_MLP': X_MLP, 'X_DHNN': X_DHNN, 'tvec': matlab.double(tvec)})
 
 # NN relative computaional cost:
 print('\nComputational cost relative to MATLAB simulation:\nMLP: {:.1f}% +/- {:.2f}% \nDHNN: {:.1f}% +/- {:.2f}%'.format(np.mean(t_mlp_true),np.std(t_mlp_true),np.mean(t_dhnn_true),np.std(t_dhnn_true)))
 
 
-#%% Phase portrait from last test run:
+#%% Phase portrait for last test run:
 ipython.magic('matplotlib inline')
-dof = 2 # DoF considered for the phase portrait 
+dof = 0 # DoF considered for the phase portrait 
 p_mlp, q_mlp = np.split(X_MLP, 2, axis=1)
 p_dhnn, q_dhnn = np.split(X_DHNN, 2, axis=1)
 p_true, q_true = np.split(X_true, 2, axis=1)

@@ -72,7 +72,7 @@ for i_beam = 1:length(beam)
         xlabel('x [m]','interpreter','latex')
         ylabel('y [m]','interpreter','latex')
         zlabel('z [m]','interpreter','latex')
-        title('Equilibrium Solution','interpreter','latex')
+%         title('Equilibrium Solution','interpreter','latex')
         grid on
         axis equal
 
@@ -91,7 +91,7 @@ for i_beam = 1:length(beam)
             end
             fig3 = surf(X3D_def,Y3D_def,Z3D_def,'facecolor',[0.3010 0.7450 0.9330],'linestyle','none');
             plot3(X3D_def(:),Y3D_def(:),Z3D_def(:),'color',[0.5 0.5 0.5]);
-            legend([fig1 fig3],'FOM','ROM','location','northeast')
+            legend([fig1 fig3],'FOM ($n=28$)','ROM ($r=12$)','location','northeast','FontSize',14,'Interpreter','latex')
         end
     end
 end

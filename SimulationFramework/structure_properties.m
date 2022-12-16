@@ -1,4 +1,4 @@
-function [beam,M,I,K,C] = structure_properties(beam_data,DoF,disp_progress)
+function [M,I,K,C] = structure_properties(beam_data,DoF,disp_progress)
 
 global beam
 beam = create_beam(beam_data,disp_progress);
@@ -17,7 +17,7 @@ end
 if ispc
     filename = fullfile(sprintf('..\\SimulationFramework\\background\\beam_data.mat'));
 else
-    filename = fullfile(sprintf('..//SimulationFramework//background//beam_data.mat'));
+    filename = fullfile(sprintf('../SimulationFramework/background/beam_data.mat'));
 end
 save(filename,'beam','M','I','K','C')
 end

@@ -1,26 +1,26 @@
 clear all; close all; clc; % 'clear all' must be used since persistent variables might have been used in a previous run
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% USER INPUTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MODEL DETAILS:
-create_structure = 'True'; % Determine whether the structure is be created or loaded when the file is available 
+create_structure = 'True'; % Determine whether the structure needs to be created or loaded when the file is available 
 beam_data = 'beam_data_test.xlsx'; % Excel file containing the input properties of the dynamical structure
 model = 'BOTH'; % Options: 'FOM' for full-order model, 'ROM' for reduced order model by truncation method or 'BOTH' for both models analysis in a single run
-DoF = {'OutBend','Torsion'}; % Options: 'InBend': in-plane bending; 'OutBend': out-of-plane bending; 'Axial': axial deformation; 'Torsion': torsion
+DoF = {'OutBend'}; % Options: 'InBend': in-plane bending; 'OutBend': out-of-plane bending; 'Axial': axial deformation; 'Torsion': torsion
 gravity = 'GravityOn'; % Options: 'GravityOn' to consider gravitational force or 'GravityOff' to disconsider it.
-tspan = 0:0.1:20; % Period of simulation [s]
+tspan = 0:0.1:10; % Period of simulation [s]
 disp_progress = 'True'; % Options: 'True' or 'False'
 
 % INITIAL CONDITIONS:
-IC = 'equilibrium'; % Options: 'random', 'null', 'equilibrium' or [p_1;p_2;...;p_n_DoF;q_1;q_2;...;q_n_DoF] for custom IC 
+IC = 'null'; % Options: 'random', 'null', 'equilibrium' or [p_1;p_2;...;p_n_DoF;q_1;q_2;...;q_n_DoF] for custom IC 
 p0_max = 0; % Amplitude of gen. momentum's interval (used only if IC='random')
 q0_max = pi/18; % amplitude of gen. coordinate's interval (used only if IC='random')
 
 % ROM SETTINGS:
-n_modes = 10; % Number of modes used to produce a ROM using truncation method
+n_modes = 2; % Number of modes used to produce a ROM using truncation method
 
 % ANIMATION SETTINGS:
-animate = 'True'; % Options: 'Y' or 'N'
+animate = 'True'; % Options: 'True' or 'False'
 element = '3D'; % Options: '1D' for unidimensional elements or '3D' for 3-dimensional elements
-animation_file = 'sim_test0'; % Filename for the simulation
+animation_file = 'test_beam2'; % Filename for the simulation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initializing Model:
 fprintf('--------------------------------<strong>ANALYSIS IN PROGRESS</strong>----------------------------------\n')
@@ -41,13 +41,23 @@ if any(strcmp(create_structure,'False'))
         error('beam_data.mat file does not exist! Set create_structure to True.')
     end
 else
-    [beam,M,I,K,C] = structure_properties(beam_data,DoF,disp_progress);
+    [M,I,K,C] = structure_properties(beam_data,DoF,disp_progress);
+    load beam_data.mat beam
 end
+
 n_DoF = length(DoF)*sum(cat(1,beam.n_element));
-% K=1e-3*K;
-% % %K(1,1) = 0;
-% % %C(1,1) = 0;
-% C=1e-1*C;
+%K=1e-3*K;
+%K(1,1) = 0;
+%C(1,1) = 0;
+%C=1e2*C;
+
+if ispc
+    filename = fullfile(sprintf('..\\SimulationFramework\\background\\beam_data.mat'));
+else
+    filename = fullfile(sprintf('../SimulationFramework/background/beam_data.mat'));
+end
+save(filename,'M','I','K','C','-append')
+
 
 %% Equilibrium Solution:
 if any(strcmp(IC,'equilibrium')) || any(strcmp(model,'ROM')) || any(strcmp(model,'BOTH'))
@@ -119,7 +129,7 @@ if any(strcmp(model,'ROM')) || any(strcmp(model,'BOTH'))
     end
 
     % ROM Simulation:
-    [X_ROM,Xdot_ROM] = simulation(model,DoF,gravity,tspan,X0,disp_progress,phi_r,'ProgressBar');
+    [X_ROM,Xdot_ROM] = simulation(model,DoF,gravity,tspan,X0,disp_progress,phi_r,'ProgressBar','PlotProgress');
     p_ROM = (phi_r*X_ROM(:,1:n_modes).').';
     q_ROM = (phi_r*X_ROM(:,n_modes+1:end).').';
 

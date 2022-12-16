@@ -44,8 +44,6 @@ for i_beam = 1:n_beam
 
         thetaz = zeros(1,length(xtest)-1);
         Kz = zeros(1,length(xtest)-1);
-        thetaz(1) = 0;
-        Kz(1) = 0;
         for i = 2:length(xtest)
             thetaz(i) = asin((ztest(i) - ztest(i-1))/beam(i_beam).L_element) ;
             Kz(i) = abs(tauztest(i-1)/(thetaz(i) - thetaz(i-1)));
@@ -83,8 +81,6 @@ for i_beam = 1:n_beam
 
         thetay = zeros(1,length(xtest)-1);
         Ky = zeros(1,length(xtest)-1);
-        thetay(1) = 0;
-        Ky(1) = 0;
         for i = 2:length(xtest)
             thetay(i) = asin((ytest(i) - ytest(i-1))/beam(i_beam).L_element) ;
             Ky(i) = abs(tauytest(i-1)/(thetay(i) - thetay(i-1)));
@@ -107,12 +103,12 @@ for i_beam = 1:n_beam
         BC = del(0) == 0;
         del(x) = dsolve(diff(del,x,1) == 1/EA,BC);
         F(x) = del*EA/x;
+
         deltest = double(del(xtest));
         Ftest = double(F(xtest(2:end)));
-
         Ka = zeros(1,length(xtest)-1);
         for i = 2:length(xtest)
-            Ka(1) = Ftest(i)/(deltest(i)-deltest(i-1));
+            Ka(i) = Ftest(i-1)/(deltest(i)-deltest(i-1));
         end
         Ka = diag(Ka(2:end));
         beam(i_beam).K = blkdiag(beam(i_beam).K,Ka);
@@ -145,6 +141,7 @@ for i_beam = 1:n_beam
             Kphi(i) = abs(Tphitest(i-1)/phi(i));
         end
         Kphi = diag(Kphi(2:end));
+        %Kphi(1) = 2*Kphi(1);
         beam(i_beam).K = blkdiag(beam(i_beam).K,Kphi);
     end
 end

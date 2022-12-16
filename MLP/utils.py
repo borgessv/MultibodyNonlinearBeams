@@ -7,15 +7,19 @@ import numpy as np
 import os, sys
 import matlab.engine
 
+if 'windows' in sys.platform:
+    bar = '\\'
+else:
+    bar = '/'
 
 def matlab_interface():
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sys.path.append(parent_dir) 
     eng = matlab.engine.start_matlab()
-    eng.addpath(parent_dir + "\\SimulationFramework", nargout= 0)
-    eng.addpath(parent_dir + "\\SimulationFramework\\background", nargout= 0)
-    eng.addpath(parent_dir + "\\SimulationFramework\\background\\utils", nargout= 0)
-    eng.addpath(parent_dir + "\\SimulationFramework\\background\\CrossSectionData", nargout= 0)
+    eng.addpath(parent_dir + bar + "SimulationFramework", nargout= 0)
+    eng.addpath(parent_dir + bar + "SimulationFramework" + bar + "background", nargout= 0)
+    eng.addpath(parent_dir + bar + "SimulationFramework" + bar + "background" + bar + "utils", nargout= 0)
+    eng.addpath(parent_dir + bar + "SimulationFramework" + bar + "background" + bar + "CrossSectionData", nargout= 0)
     return eng
 
 

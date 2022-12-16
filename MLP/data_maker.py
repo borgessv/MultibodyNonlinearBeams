@@ -12,11 +12,16 @@ Version: 10-July-2022
 import os, sys
 import numpy as np
 import pandas as pd
+import scipy.io
 import matlab.engine
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
+if 'windows' in sys.platform:
+    bar = '\\'
+else:
+    bar = '/'
 
 def make_dataset(model_param, seed=0, samples=20, train_split=0.5, **kwargs):
     print('\rCreating dataset... {:.1f}% done'.format(0), end='')
@@ -30,13 +35,19 @@ def make_dataset(model_param, seed=0, samples=20, train_split=0.5, **kwargs):
     
     # Initializing structure properties:
     beam_data = model_param.beam_data
-    beam = pd.read_excel(parent_dir + "\\SimulationFramework\\" + beam_data)
+    beam = pd.read_excel(parent_dir + bar + "SimulationFramework" + bar + beam_data)
     n_DoF = len(DoF)*int(np.sum(np.array(beam.iloc[3,1:])))
     M, I, K, C = eng.structure_properties(beam_data,DoF,disp_progress,nargout=4)
-    #K = eng.times(1e-3,K)
-    #C = eng.times(1e-1,C)
+    #x0 = np.array([np.zeros(n_DoF)])
+    #Xeq = eng.solve_equilibrium(K,DoF,gravity,'FOM',matlab.double(x0),nargout=1)
+    #n_modes = 2
+    #phi_r = eng.create_rom(n_modes,DoF,Xeq,nargout=1)
+    # K = eng.times(1e-3,K)
+    #C = eng.times(1e2,C)
     #K = matlab.double(K)
     #K[0][0] = 0
+    #with open(parent_dir + bar + "SimulationFramework" + bar + "background" + bar + "beam_data.mat",'ab') as f:
+    #    scipy.io.savemat(f, {'K': K, 'I': I, 'M': M, 'C': C}) 
     
     # Simulation timestep:
     dt = model_param.timestep
@@ -55,10 +66,10 @@ def make_dataset(model_param, seed=0, samples=20, train_split=0.5, **kwargs):
     for i in range(samples):
         p0 = (p0span[1]-p0span[0])*np.random.rand(n_DoF) + p0span[0] 
         q0 = (q0span[1]-q0span[0])*np.random.rand(n_DoF) + q0span[0]
-        X0 = np.array([np.concatenate([p0,q0])]).T
+        X0 = np.array([np.concatenate([p0,q0])])
         X0 = matlab.double(X0)
         
-        X, Xdot = eng.simulation(model,DoF,gravity,teval,M,I,K,C,X0,disp_progress,nargout=2)
+        X, Xdot = eng.simulation(model,DoF,gravity,teval,X0,disp_progress,nargout=2)
         
         X = np.array(X)        
         X_data.append(X)
